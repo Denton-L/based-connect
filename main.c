@@ -1,22 +1,39 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <getopt.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define CN_P1_LEN 3
-#define CN_P2_LEN 4
+#define BYTE_MAX 0xFF
+#define CN_BASE_PACK_LEN 3
 
 // TODO: make this dynamically read from commandline
 static char dest[18] = "04:52:C7:5B:8B:47";
 
-int change_name(char *name) {
-	char packet1[CN_P1_LEN + 0xFF] = { 0x01, 0x02, 0x02 };
-	char packet2[CN_P2_LEN] = { 0x01, 0x01, 0x05, 0x00 };
+int change_name(int sock, char *name) {
+	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
 	size_t length = strlen(name);
+
+	if (length > BYTE_MAX) {
+		length = BYTE_MAX;
+		printf("Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
+	}
+
+	packet[CN_BASE_PACK_LEN] = (char) length;
+	strncpy(&packet[CN_BASE_PACK_LEN + 1], name, BYTE_MAX);
+
+	return write(sock, packet, CN_BASE_PACK_LEN + 1 + length);
+}
+
+int main(int argc, char *argv[]) {
+// TODO: implement command arg parsing
+//	struct option command_options[] = {
+//		{ "set-name", no_argument, NULL, 1 }
+//	};
 
 	int status;
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -27,34 +44,10 @@ int change_name(char *name) {
 	};
 	str2ba(dest, &address.rc_bdaddr);
 
-	if (length > 0xFF) {
-		length = 0xFF;
-	}
-
-	packet1[CN_P1_LEN] = (char) length;
-	strncpy(&packet1[CN_P1_LEN + 1], name, 0xFF);
-
 	status = connect(sock, (struct sockaddr *) &address, sizeof(address));
 
-	printf("Status after connect: %d\n", status);
-	if (status == 0) {
-		status = write(sock, packet1, CN_P1_LEN + 1 + length);
-		printf("Status after packet 1: %d\n", status);
-		// status = write(sock, packet2, CN_P2_LEN);
-		// printf("Status after packet 2: %d\n", status);
-	}
+	change_name(sock, "this is a test");
 
 	close(sock);
-	return status;
-}
-
-int main(int argc, char *argv[]) {
-// TODO: implement command arg parsing
-//	struct option command_options[] = {
-//		{ "set-name", no_argument, NULL, 1 }
-//	};
-
-
-	change_name("this is a test");
 	return 0;
 }
