@@ -1,33 +1,13 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <getopt.h>
-#include <limits.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define BYTE_MAX 0xFF
-#define CN_BASE_PACK_LEN 3
+#include "based.h"
 
 // TODO: make this dynamically read from commandline
 static char dest[18] = "04:52:C7:5B:8B:47";
-
-int change_name(int sock, char *name) {
-	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
-	size_t length = strlen(name);
-
-	if (length > BYTE_MAX) {
-		length = BYTE_MAX;
-		printf("Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
-	}
-
-	packet[CN_BASE_PACK_LEN] = (char) length;
-	strncpy(&packet[CN_BASE_PACK_LEN + 1], name, BYTE_MAX);
-
-	return write(sock, packet, CN_BASE_PACK_LEN + 1 + length);
-}
 
 int main(int argc, char *argv[]) {
 // TODO: implement command arg parsing
