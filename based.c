@@ -7,11 +7,10 @@
 #define BYTE_MAX 0xFF
 #define CN_BASE_PACK_LEN 3
 
-int change_name(int sock, const char *name) {
+ssize_t change_name(int sock, const char *name) {
 	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
 	size_t length = strlen(name);
 	size_t packet_len;
-	ssize_t written;
 
 	if (length > BYTE_MAX) {
 		length = BYTE_MAX;
@@ -23,7 +22,5 @@ int change_name(int sock, const char *name) {
 	packet[CN_BASE_PACK_LEN] = (char) length;
 	strncpy(&packet[CN_BASE_PACK_LEN + 1], name, BYTE_MAX);
 
-	written = write(sock, packet, packet_len);
-
-	return written == packet_len ? 0 : written;
+	return write(sock, packet, packet_len);
 }
