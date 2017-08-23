@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_rc address = {
 		AF_BLUETOOTH,
 		*BDADDR_ANY,
-		BT_CHANNEL
+		BOSE_CHANNEL
 	};
 
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) != -1) {
