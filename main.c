@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (argc - 1 != optind) {
-		fprintf(stderr, "The address must be provided as the final argument.\n");
+		fprintf(stderr, "Invalid arguments provided.\n");
 		return 1;
 	}
 
