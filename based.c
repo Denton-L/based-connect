@@ -16,7 +16,7 @@ ssize_t set_name(int sock, const char *name) {
 
 	if (length > BYTE_MAX) {
 		length = BYTE_MAX;
-		printf("Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
+		fprintf(stderr, "Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
 	}
 
 	packet[CN_BASE_PACK_LEN] = (char) length;

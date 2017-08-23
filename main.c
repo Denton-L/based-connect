@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 				} else if (strcmp(optarg, "off") == 0) {
 					noise_cancelling_arg = NC_OFF;
 				} else {
-					printf("Invalid noise cancelling argument: %s\n", optarg);
+					fprintf(stderr, "Invalid noise cancelling argument: %s\n", optarg);
 					return 1;
 				}
 				break;
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 				} else if (strcmp(optarg, "off") == 0) {
 					voice_prompts_arg = VP_OFF;
 				} else {
-					printf("Invalid voice prompts argument: %s\n", optarg);
+					fprintf(stderr, "Invalid voice prompts argument: %s\n", optarg);
 					return 1;
 				}
 				break;
@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
 					case AO_180MIN:
 						break;
 					default:
-						printf("Invalid auto-off argument: %s\n", optarg);
-						printf("Must be one of %d, %d, %d, %d, %d, %d\n",
+						fprintf(stderr, "Invalid auto-off argument: %s\n", optarg);
+						fprintf(stderr, "Must be one of %d, %d, %d, %d, %d, %d\n",
 								AO_NEVER, AO_5MIN, AO_20MIN, AO_40MIN, AO_60MIN,
 								AO_180MIN);
 						return 1;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (argc - 1 != optind) {
-		printf("The address must be provided as the final argument.\n");
+		fprintf(stderr, "The address must be provided as the final argument.\n");
 		return 1;
 	}
 
