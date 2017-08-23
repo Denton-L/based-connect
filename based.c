@@ -8,6 +8,7 @@
 #define CN_BASE_PACK_LEN 3
 #define NC_PACK_LEN 5
 #define VP_PACK_LEN 5
+#define AO_PACK_LEN 5
 
 ssize_t set_name(int sock, const char *name) {
 	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
@@ -32,4 +33,9 @@ ssize_t noise_cancelling(int sock, char level) {
 ssize_t voice_prompts(int sock, char setting) {
 	char packet[VP_PACK_LEN] = { 0x01, 0x03, 0x02, 0x01, setting };
 	return write(sock, packet, VP_PACK_LEN);
+}
+
+ssize_t auto_off(int sock, unsigned char minutes) {
+	char packet[AO_PACK_LEN] = { 0x01, 0x04, 0x02, 0x01, *(char *) &minutes };
+	return write(sock, packet, AO_PACK_LEN);
 }
