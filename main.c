@@ -8,12 +8,11 @@
 #include "based.h"
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "+hn:c:v:o:l:";
+	const char *short_opt = "+hn:c:o:l:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "set-name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
-		{ "voice-prompts", required_argument, NULL, 'v' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
 		{ 0, 0, 0, 0 }
@@ -23,7 +22,6 @@ int main(int argc, char *argv[]) {
 
 	char *set_name_arg = NULL;
 	char noise_cancelling_arg = -1;
-	char voice_prompts_arg = -1;
 	int auto_off_arg = -1;
 	char prompt_language_arg = -1;
 
@@ -57,17 +55,6 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			case 'v':
-				if (strcmp(optarg, "on") == 0) {
-					voice_prompts_arg = VP_ON;
-				} else if (strcmp(optarg, "off") == 0) {
-					voice_prompts_arg = VP_OFF;
-				} else {
-					fprintf(stderr, "Invalid voice prompts argument: %s\n", optarg);
-					return 1;
-				}
-				break;
-
 			case 'o':
 				auto_off_arg = atoi(optarg);
 
@@ -88,7 +75,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'l':
-				if (strcmp(optarg, "en") == 0) {
+				if (strcmp(optarg, "off") == 0) {
+					prompt_language_arg = PL_OFF;
+				} else if (strcmp(optarg, "en") == 0) {
 					prompt_language_arg = PL_EN;
 				} else if (strcmp(optarg, "fr") == 0) {
 					prompt_language_arg = PL_FR;
@@ -112,6 +101,7 @@ int main(int argc, char *argv[]) {
 					prompt_language_arg = PL_SV;
 				} else {
 					fprintf(stderr, "Invalid prompt language argument: %s\n", optarg);
+					return 1;
 				}
 
 				break;
@@ -145,12 +135,6 @@ int main(int argc, char *argv[]) {
 
 	if (noise_cancelling_arg >= 0) {
 		if (noise_cancelling(sock, noise_cancelling_arg) != 0) {
-			goto error;
-		}
-	}
-
-	if (voice_prompts_arg >= 0) {
-		if (voice_prompts(sock, voice_prompts_arg) != 0) {
 			goto error;
 		}
 	}

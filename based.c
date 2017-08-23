@@ -61,13 +61,6 @@ int noise_cancelling(int sock, enum NoiseCancelling level) {
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
-int voice_prompts(int sock, enum VoicePrompt setting) {
-	uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, setting };
-	// TODO: ensure that this value is correct
-	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, setting, 0x00, 0x04, 0xc3, 0xde };
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
-}
-
 int auto_off(int sock, enum AutoOff minutes) {
 	uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, minutes };
 	uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, minutes };

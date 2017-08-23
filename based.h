@@ -11,11 +11,6 @@ enum NoiseCancelling {
 	NC_OFF = 0x00
 };
 
-enum VoicePrompt {
-	VP_ON = 0x21,
-	VP_OFF = 0x01
-};
-
 enum AutoOff {
 	AO_NEVER = 0,
 	AO_5_MIN = 5,
@@ -26,6 +21,7 @@ enum AutoOff {
 };
 
 enum PromptLanguage {
+	PL_OFF = 0x01,
 	PL_EN = 0x21,
 	PL_FR = 0x22,
 	PL_IT = 0x23,
@@ -41,7 +37,6 @@ enum PromptLanguage {
 
 int set_name(int sock, const char *name);
 int noise_cancelling(int sock, enum NoiseCancelling level);
-int voice_prompts(int sock, enum VoicePrompt setting);
 int auto_off(int sock, enum AutoOff minutes);
 int prompt_language(int sock, enum PromptLanguage language);
 
