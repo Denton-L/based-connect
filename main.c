@@ -136,32 +136,33 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	// TODO: refactor this common code together so can differentiate between > 0 and < 0 exit code
 	if (set_name_arg) {
-		if (set_name(sock, set_name_arg) < 0) {
+		if (set_name(sock, set_name_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (noise_cancelling_arg >= 0) {
-		if (noise_cancelling(sock, noise_cancelling_arg) < 0) {
+		if (noise_cancelling(sock, noise_cancelling_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (voice_prompts_arg >= 0) {
-		if (voice_prompts(sock, voice_prompts_arg) < 0) {
+		if (voice_prompts(sock, voice_prompts_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (auto_off_arg >= 0) {
-		if (auto_off(sock, (unsigned char) auto_off_arg) < 0) {
+		if (auto_off(sock, auto_off_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (prompt_language_arg >= 0) {
-		if (prompt_language(sock, prompt_language_arg) < 0) {
+		if (prompt_language(sock, prompt_language_arg) != 0) {
 			goto error;
 		}
 	}

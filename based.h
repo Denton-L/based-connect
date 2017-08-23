@@ -39,10 +39,10 @@ enum PromptLanguage {
 	PL_SV = 0x32
 };
 
-ssize_t set_name(int sock, const char *name);
-ssize_t noise_cancelling(int sock, enum NoiseCancelling level);
-ssize_t voice_prompts(int sock, enum VoicePrompt setting);
-ssize_t auto_off(int sock, enum AutoOff minutes);
-ssize_t prompt_language(int sock, enum PromptLanguage language);
+int set_name(int sock, const char *name);
+int noise_cancelling(int sock, enum NoiseCancelling level);
+int voice_prompts(int sock, enum VoicePrompt setting);
+int auto_off(int sock, enum AutoOff minutes);
+int prompt_language(int sock, enum PromptLanguage language);
 
 #endif
