@@ -7,13 +7,14 @@
 
 #include "based.h"
 
+#define SOCKET_TIMEOUT 1
+
 int main(int argc, char *argv[]) {
-	const char *short_opt = "+hn:c:v:o:l:";
+	const char *short_opt = "+hn:c:o:l:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "set-name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
-		{ "voice-prompts", required_argument, NULL, 'v' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
 		{ 0, 0, 0, 0 }
@@ -23,10 +24,10 @@ int main(int argc, char *argv[]) {
 
 	char *set_name_arg = NULL;
 	char noise_cancelling_arg = -1;
-	char voice_prompts_arg = -1;
 	int auto_off_arg = -1;
 	char prompt_language_arg = -1;
 
+	const struct timeval sock_timeout = { SOCKET_TIMEOUT, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	struct sockaddr_rc address = {
 		AF_BLUETOOTH,
@@ -57,17 +58,6 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
-			case 'v':
-				if (strcmp(optarg, "on") == 0) {
-					voice_prompts_arg = VP_ON;
-				} else if (strcmp(optarg, "off") == 0) {
-					voice_prompts_arg = VP_OFF;
-				} else {
-					fprintf(stderr, "Invalid voice prompts argument: %s\n", optarg);
-					return 1;
-				}
-				break;
-
 			case 'o':
 				auto_off_arg = atoi(optarg);
 
@@ -88,7 +78,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'l':
-				if (strcmp(optarg, "en") == 0) {
+				if (strcmp(optarg, "off") == 0) {
+					prompt_language_arg = PL_OFF;
+				} else if (strcmp(optarg, "en") == 0) {
 					prompt_language_arg = PL_EN;
 				} else if (strcmp(optarg, "fr") == 0) {
 					prompt_language_arg = PL_FR;
@@ -112,6 +104,7 @@ int main(int argc, char *argv[]) {
 					prompt_language_arg = PL_SV;
 				} else {
 					fprintf(stderr, "Invalid prompt language argument: %s\n", optarg);
+					return 1;
 				}
 
 				break;
@@ -130,38 +123,43 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &sock_timeout, sizeof(sock_timeout)) < 0) {
+		perror("Could not set socket send timeout");
+		return 1;
+	}
+
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &sock_timeout, sizeof(sock_timeout)) < 0) {
+		perror("Could not set socket recieve timeout");
+		return 1;
+	}
+
 	str2ba(argv[optind], &address.rc_bdaddr);
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
 		return 1;
 	}
 
+	// TODO: refactor this common code together so can differentiate between > 0 and < 0 exit code
 	if (set_name_arg) {
-		if (set_name(sock, set_name_arg) < 0) {
+		if (set_name(sock, set_name_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (noise_cancelling_arg >= 0) {
-		if (noise_cancelling(sock, noise_cancelling_arg) < 0) {
-			goto error;
-		}
-	}
-
-	if (voice_prompts_arg >= 0) {
-		if (voice_prompts(sock, voice_prompts_arg) < 0) {
+		if (noise_cancelling(sock, noise_cancelling_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (auto_off_arg >= 0) {
-		if (auto_off(sock, (unsigned char) auto_off_arg) < 0) {
+		if (auto_off(sock, auto_off_arg) != 0) {
 			goto error;
 		}
 	}
 
 	if (prompt_language_arg >= 0) {
-		if (prompt_language(sock, prompt_language_arg) < 0) {
+		if (prompt_language(sock, prompt_language_arg) != 0) {
 			goto error;
 		}
 	}
