@@ -8,13 +8,14 @@
 #include "based.h"
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "+hn:c:v:o:";
+	const char *short_opt = "+hn:c:v:o:l:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "set-name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "voice-prompts", required_argument, NULL, 'v' },
 		{ "auto-off", required_argument, NULL, 'o' },
+		{ "prompt-language", required_argument, NULL, 'l' },
 		{ 0, 0, 0, 0 }
 	};
 	int opt_index = 0;
@@ -24,6 +25,7 @@ int main(int argc, char *argv[]) {
 	char noise_cancelling_arg = -1;
 	char voice_prompts_arg = -1;
 	int auto_off_arg = -1;
+	char prompt_language_arg = -1;
 
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	struct sockaddr_rc address = {
@@ -86,6 +88,35 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
+			case 'l':
+				if (strcmp(optarg, "en") == 0) {
+					prompt_language_arg = PL_EN;
+				} else if (strcmp(optarg, "fr") == 0) {
+					prompt_language_arg = PL_FR;
+				} else if (strcmp(optarg, "it") == 0) {
+					prompt_language_arg = PL_IT;
+				} else if (strcmp(optarg, "de") == 0) {
+					prompt_language_arg = PL_DE;
+				} else if (strcmp(optarg, "es") == 0) {
+					prompt_language_arg = PL_ES;
+				} else if (strcmp(optarg, "pt") == 0) {
+					prompt_language_arg = PL_PT;
+				} else if (strcmp(optarg, "zh") == 0) {
+					prompt_language_arg = PL_ZH;
+				} else if (strcmp(optarg, "ko") == 0) {
+					prompt_language_arg = PL_KO;
+				} else if (strcmp(optarg, "nl") == 0) {
+					prompt_language_arg = PL_NL;
+				} else if (strcmp(optarg, "ja") == 0) {
+					prompt_language_arg = PL_JA;
+				} else if (strcmp(optarg, "sv") == 0) {
+					prompt_language_arg = PL_SV;
+				} else {
+					fprintf(stderr, "Invalid prompt language argument: %s\n", optarg);
+				}
+
+				break;
+
 			case '?':
 				// TODO: print error message if opterr != 0
 				return 1;
@@ -126,6 +157,12 @@ int main(int argc, char *argv[]) {
 
 	if (auto_off_arg >= 0) {
 		if (auto_off(sock, (unsigned char) auto_off_arg) < 0) {
+			goto error;
+		}
+	}
+
+	if (prompt_language_arg >= 0) {
+		if (prompt_language(sock, prompt_language_arg) < 0) {
 			goto error;
 		}
 	}
