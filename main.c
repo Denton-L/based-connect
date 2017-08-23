@@ -7,8 +7,6 @@
 
 #include "based.h"
 
-#define SOCKET_TIMEOUT 1
-
 int main(int argc, char *argv[]) {
 	const char *short_opt = "+hn:c:o:l:";
 	const struct option long_opt[] = {
@@ -27,7 +25,8 @@ int main(int argc, char *argv[]) {
 	int auto_off_arg = -1;
 	char prompt_language_arg = -1;
 
-	const struct timeval sock_timeout = { SOCKET_TIMEOUT, 0 };
+	const struct timeval send_timeout = { 5, 0 };
+	const struct timeval recieve_timeout = { 1, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	struct sockaddr_rc address = {
 		AF_BLUETOOTH,
@@ -123,12 +122,12 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &sock_timeout, sizeof(sock_timeout)) < 0) {
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
 		perror("Could not set socket send timeout");
 		return 1;
 	}
 
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &sock_timeout, sizeof(sock_timeout)) < 0) {
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &recieve_timeout, sizeof(recieve_timeout)) < 0) {
 		perror("Could not set socket recieve timeout");
 		return 1;
 	}
