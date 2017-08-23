@@ -5,36 +5,44 @@
 
 #define BOSE_CHANNEL 8
 
-#define NC_HIGH 0x01
-#define NC_LOW 0x03
-#define NC_OFF 0x00
+enum NoiseCancelling {
+	NC_HIGH = 0x01,
+	NC_LOW = 0x03,
+	NC_OFF = 0x00
+};
 
-#define VP_ON 0x21
-#define VP_OFF 0x01
+enum VoicePrompt {
+	VP_ON = 0x21,
+	VP_OFF = 0x01
+};
 
-#define AO_NEVER 0
-#define AO_5MIN 5
-#define AO_20MIN 20
-#define AO_40MIN 40
-#define AO_60MIN 60
-#define AO_180MIN 180
+enum AutoOff {
+	AO_NEVER = 0,
+	AO_5_MIN = 5,
+	AO_20_MIN = 20,
+	AO_40_MIN = 40,
+	AO_60_MIN = 60,
+	AO_180_MIN = 180
+};
 
-#define PL_EN 0x21
-#define PL_FR 0x22
-#define PL_IT 0x23
-#define PL_DE 0x24
-#define PL_ES 0x26
-#define PL_PT 0x27
-#define PL_ZH 0x28
-#define PL_KO 0x29
-#define PL_NL 0x2e
-#define PL_JA 0x2f
-#define PL_SV 0x32
+enum PromptLanguage {
+	PL_EN = 0x21,
+	PL_FR = 0x22,
+	PL_IT = 0x23,
+	PL_DE = 0x24,
+	PL_ES = 0x26,
+	PL_PT = 0x27,
+	PL_ZH = 0x28,
+	PL_KO = 0x29,
+	PL_NL = 0x2e,
+	PL_JA = 0x2f,
+	PL_SV = 0x32
+};
 
 ssize_t set_name(int sock, const char *name);
-ssize_t noise_cancelling(int sock, char level);
-ssize_t voice_prompts(int sock, char setting);
-ssize_t auto_off(int sock, unsigned char minutes);
-ssize_t prompt_language(int sock, char language);
+ssize_t noise_cancelling(int sock, enum NoiseCancelling level);
+ssize_t voice_prompts(int sock, enum VoicePrompt setting);
+ssize_t auto_off(int sock, enum AutoOff minutes);
+ssize_t prompt_language(int sock, enum PromptLanguage language);
 
 #endif

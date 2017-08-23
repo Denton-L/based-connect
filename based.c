@@ -26,22 +26,22 @@ ssize_t set_name(int sock, const char *name) {
 	return write(sock, packet, CN_BASE_PACK_LEN + 1 + length);
 }
 
-ssize_t noise_cancelling(int sock, char level) {
+ssize_t noise_cancelling(int sock, enum NoiseCancelling level) {
 	char packet[NC_PACK_LEN] = { 0x01, 0x06, 0x02, 0x01, level };
 	return write(sock, packet, NC_PACK_LEN);
 }
 
-ssize_t voice_prompts(int sock, char setting) {
+ssize_t voice_prompts(int sock, enum VoicePrompt setting) {
 	char packet[VP_PACK_LEN] = { 0x01, 0x03, 0x02, 0x01, setting };
 	return write(sock, packet, VP_PACK_LEN);
 }
 
-ssize_t auto_off(int sock, unsigned char minutes) {
-	char packet[AO_PACK_LEN] = { 0x01, 0x04, 0x02, 0x01, *(char *) &minutes };
+ssize_t auto_off(int sock, enum AutoOff minutes) {
+	char packet[AO_PACK_LEN] = { 0x01, 0x04, 0x02, 0x01, minutes };
 	return write(sock, packet, AO_PACK_LEN);
 }
 
-ssize_t prompt_language(int sock, char language) {
+ssize_t prompt_language(int sock, enum PromptLanguage language) {
 	char packet[AO_PACK_LEN] = { 0x01, 0x03, 0x02, 0x01, language };
 	return write(sock, packet, PL_PACK_LEN);
 }
