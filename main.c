@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	int opt_index = 0;
 	int opt;
 
-	char *change_name_arg = NULL;
+	char *set_name_arg = NULL;
 
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	struct sockaddr_rc address = {
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 				return 0;
 
 			case 'n':
-				change_name_arg = optarg;
+				set_name_arg = optarg;
 				break;
 
 			case '?':
@@ -56,8 +56,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	if (change_name_arg) {
-		if (change_name(sock, change_name_arg) < 0) {
+	if (set_name_arg) {
+		if (set_name(sock, set_name_arg) < 0) {
 			printf("Failed to change name. (%d)\n", errno);
 			goto error;
 		}

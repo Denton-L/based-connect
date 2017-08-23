@@ -7,7 +7,7 @@
 #define BYTE_MAX 0xFF
 #define CN_BASE_PACK_LEN 3
 
-ssize_t change_name(int sock, const char *name) {
+ssize_t set_name(int sock, const char *name) {
 	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
 	size_t length = strlen(name);
 	size_t packet_len;
