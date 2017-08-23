@@ -8,12 +8,13 @@
 #include "based.h"
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "+hn:c:v:";
+	const char *short_opt = "+hn:c:v:o:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "set-name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "voice-prompts", required_argument, NULL, 'v' },
+		{ "auto-off", required_argument, NULL, 'o' },
 		{ 0, 0, 0, 0 }
 	};
 	int opt_index = 0;
@@ -22,6 +23,7 @@ int main(int argc, char *argv[]) {
 	char *set_name_arg = NULL;
 	char noise_cancelling_arg = -1;
 	char voice_prompts_arg = -1;
+	int auto_off_arg = -1;
 
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	struct sockaddr_rc address = {
@@ -64,6 +66,26 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 
+			case 'o':
+				auto_off_arg = atoi(optarg);
+
+				switch (auto_off_arg) {
+					case AO_NEVER:
+					case AO_5MIN:
+					case AO_20MIN:
+					case AO_40MIN:
+					case AO_60MIN:
+					case AO_180MIN:
+						break;
+					default:
+						printf("Invalid auto-off argument: %s\n", optarg);
+						printf("Must be one of %d, %d, %d, %d, %d, %d\n",
+								AO_NEVER, AO_5MIN, AO_20MIN, AO_40MIN, AO_60MIN,
+								AO_180MIN);
+						return 1;
+				}
+				break;
+
 			case '?':
 				// TODO: print error message if opterr != 0
 				return 1;
@@ -98,6 +120,12 @@ int main(int argc, char *argv[]) {
 
 	if (voice_prompts_arg >= 0) {
 		if (voice_prompts(sock, voice_prompts_arg) < 0) {
+			goto error;
+		}
+	}
+
+	if (auto_off_arg >= 0) {
+		if (auto_off(sock, (unsigned char) auto_off_arg) < 0) {
 			goto error;
 		}
 	}

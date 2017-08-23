@@ -12,8 +12,16 @@
 #define VP_ON 0x21
 #define VP_OFF 0x01
 
+#define AO_NEVER 0
+#define AO_5MIN 5
+#define AO_20MIN 20
+#define AO_40MIN 40
+#define AO_60MIN 60
+#define AO_180MIN 180
+
 ssize_t set_name(int sock, const char *name);
 ssize_t noise_cancelling(int sock, char level);
 ssize_t voice_prompts(int sock, char setting);
+ssize_t auto_off(int sock, unsigned char minutes);
 
 #endif
