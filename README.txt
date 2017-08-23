@@ -10,3 +10,15 @@ Disclaimer
 
 I have only tested these on my own Bose QuietComfort 35's with firmware 1.3.2.
 I cannot ensure that this program works on any other devies.
+
+Todo
+----
+
+* Impelement "getters" for current headphone state
+	* Battery
+	* Current status of all setters currently implemented
+	* Serial number
+	* Firmware version
+	* Date of manufacturing
+* Implment device control
+* Any TODOs in the code

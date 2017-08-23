@@ -4,26 +4,43 @@
 
 #include "based.h"
 
-#define BYTE_MAX 0xFF
-#define CN_BASE_PACK_LEN 3
+#define BYTE_MAX 0xFE
+#define CN_BASE_PACK_LEN 4
+#define CN_BASE_CONF_LEN 5
 #define NC_PACK_LEN 5
 #define VP_PACK_LEN 5
 #define AO_PACK_LEN 5
 #define PL_PACK_LEN 5
 
 ssize_t set_name(int sock, const char *name) {
-	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02 };
+	char packet[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02, 0x00 };
+	char conf_packet[CN_BASE_CONF_LEN + BYTE_MAX] = { 0x01, 0x02, 0x03, 0x00, 0x00 };
+	char conf_buffer[CN_BASE_CONF_LEN + BYTE_MAX];
 	size_t length = strlen(name);
+	int status;
 
 	if (length > BYTE_MAX) {
 		length = BYTE_MAX;
 		fprintf(stderr, "Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
 	}
 
-	packet[CN_BASE_PACK_LEN] = (char) length;
-	strncpy(&packet[CN_BASE_PACK_LEN + 1], name, BYTE_MAX);
+	packet[3] = length;
+	strncpy(&packet[CN_BASE_PACK_LEN], name, BYTE_MAX);
 
-	return write(sock, packet, CN_BASE_PACK_LEN + 1 + length);
+	conf_packet[3] = length + 1;
+	strncpy(&conf_packet[CN_BASE_CONF_LEN], name, BYTE_MAX);
+
+	status = write(sock, packet, CN_BASE_PACK_LEN + length);
+	if (status < 0) {
+		return status;
+	}
+
+	status = read(sock, conf_buffer, CN_BASE_CONF_LEN + length);
+	if (status < 0) {
+		return status;
+	}
+
+	return memcmp(conf_packet, conf_buffer, CN_BASE_PACK_LEN + length);
 }
 
 ssize_t noise_cancelling(int sock, enum NoiseCancelling level) {
