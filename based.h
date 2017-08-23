@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 
-#define BT_CHANNEL 8
+#define BOSE_CHANNEL 8
 
 #define NC_HIGH 0x01
 #define NC_LOW 0x03
