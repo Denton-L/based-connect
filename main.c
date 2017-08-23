@@ -73,17 +73,16 @@ int main(int argc, char *argv[]) {
 
 				switch (auto_off_arg) {
 					case AO_NEVER:
-					case AO_5MIN:
-					case AO_20MIN:
-					case AO_40MIN:
-					case AO_60MIN:
-					case AO_180MIN:
+					case AO_5_MIN:
+					case AO_20_MIN:
+					case AO_40_MIN:
+					case AO_60_MIN:
+					case AO_180_MIN:
 						break;
 					default:
 						fprintf(stderr, "Invalid auto-off argument: %s\n", optarg);
 						fprintf(stderr, "Must be one of %d, %d, %d, %d, %d, %d\n",
-								AO_NEVER, AO_5MIN, AO_20MIN, AO_40MIN, AO_60MIN,
-								AO_180MIN);
+								AO_NEVER, AO_5_MIN, AO_20_MIN, AO_40_MIN, AO_60_MIN, AO_180_MIN);
 						return 1;
 				}
 				break;
