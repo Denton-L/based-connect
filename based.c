@@ -1,12 +1,10 @@
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "based.h"
 
-#define BYTE_MAX 0xfe
 #define CN_BASE_PACK_LEN 4
 #define CN_BASE_CONF_LEN 5
 
@@ -40,20 +38,15 @@ static int write_check(int sock, const void *send, size_t send_n,
 }
 
 int set_name(int sock, const char *name) {
-	uint8_t send[CN_BASE_PACK_LEN + BYTE_MAX] = { 0x01, 0x02, 0x02, 0x00 };
-	uint8_t expected[CN_BASE_CONF_LEN + BYTE_MAX] = { 0x01, 0x02, 0x03, 0x00, 0x00 };
+	uint8_t send[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, 0x00 };
+	uint8_t expected[CN_BASE_CONF_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x03, 0x00, 0x00 };
 	size_t length = strlen(name);
 
-	if (length > BYTE_MAX) {
-		length = BYTE_MAX;
-		fprintf(stderr, "Length of name too long. Truncating to %d characters.\n", BYTE_MAX);
-	}
-
 	send[3] = length;
-	strncpy((char *) &send[CN_BASE_PACK_LEN], name, BYTE_MAX);
+	strncpy((char *) &send[CN_BASE_PACK_LEN], name, MAX_NAME_LEN);
 
 	expected[3] = length + 1;
-	strncpy((char *) &expected[CN_BASE_CONF_LEN], name, BYTE_MAX);
+	strncpy((char *) &expected[CN_BASE_CONF_LEN], name, MAX_NAME_LEN);
 
 	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_PACK_LEN + length);
 }

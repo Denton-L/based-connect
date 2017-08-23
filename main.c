@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 	int opt_index = 0;
 	int opt;
 
-	char *set_name_arg = NULL;
+	char set_name_arg[MAX_NAME_LEN + 1] = { 0 };
 	char noise_cancelling_arg = -1;
 	int auto_off_arg = -1;
 	char prompt_language_arg = -1;
@@ -41,7 +41,11 @@ int main(int argc, char *argv[]) {
 				return 0;
 
 			case 'n':
-				set_name_arg = optarg;
+				if (strlen(optarg) > MAX_NAME_LEN) {
+					fprintf(stderr, "Length of name exceeds %d character maximum.\n", MAX_NAME_LEN);
+					return 1;
+				}
+				strncpy(set_name_arg, optarg, MAX_NAME_LEN);
 				break;
 
 			case 'c':
@@ -139,7 +143,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// TODO: refactor this common code together so can differentiate between > 0 and < 0 exit code
-	if (set_name_arg) {
+	if (set_name_arg[0]) {
 		if (set_name(sock, set_name_arg) != 0) {
 			goto error;
 		}

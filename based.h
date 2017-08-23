@@ -1,9 +1,9 @@
 #ifndef BASED_H
 #define BASED_H
 
-#include <unistd.h>
-
 #define BOSE_CHANNEL 8
+
+#define MAX_NAME_LEN 0xfe
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
