@@ -1,6 +1,5 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
-#include <errno.h>
 #include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,27 +80,24 @@ int main(int argc, char *argv[]) {
 
 	str2ba(argv[optind], &address.rc_bdaddr);
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
-		printf("Could not connect to Bluetooth device. (%d)\n", errno);
+		perror("Could not connect to Bluetooth device");
 		return 1;
 	}
 
 	if (set_name_arg) {
 		if (set_name(sock, set_name_arg) < 0) {
-			printf("Failed to change name. (%d)\n", errno);
 			goto error;
 		}
 	}
 
 	if (noise_cancelling_arg >= 0) {
 		if (noise_cancelling(sock, noise_cancelling_arg) < 0) {
-			printf("Failed to change noise cancelling level. (%d)\n", errno);
 			goto error;
 		}
 	}
 
 	if (voice_prompts_arg >= 0) {
 		if (voice_prompts(sock, voice_prompts_arg) < 0) {
-			printf("Failed to change voice prompts setting. (%d)\n", errno);
 			goto error;
 		}
 	}
@@ -110,6 +106,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 
 error:
+	perror("Failed to change setting");
 	close(sock);
 	return 1;
 }
