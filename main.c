@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_rc address = {
 		AF_BLUETOOTH,
 		*BDADDR_ANY,
-		8 // TODO: think about refactoring this out into a constant
+		BT_CHANNEL
 	};
 	str2ba(dest, &address.rc_bdaddr);
 
