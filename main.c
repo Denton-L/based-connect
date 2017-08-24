@@ -39,7 +39,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 		return 1;
 	}
 
-	return noise_cancelling(sock, nc);
+	return set_noise_cancelling(sock, nc);
 }
 
 static int do_set_auto_off(int sock, const char *arg) {
@@ -60,7 +60,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 			return 1;
 	}
 
-	return auto_off(sock, ao);
+	return set_auto_off(sock, ao);
 }
 
 static int do_set_prompt_language(int sock, const char *arg) {
@@ -95,7 +95,7 @@ static int do_set_prompt_language(int sock, const char *arg) {
 		return 1;
 	}
 
-	return prompt_language(sock, pl);
+	return set_prompt_language(sock, pl);
 }
 
 int main(int argc, char *argv[]) {

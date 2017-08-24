@@ -51,19 +51,19 @@ int set_name(int sock, const char *name) {
 	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_PACK_LEN + length);
 }
 
-int noise_cancelling(int sock, enum NoiseCancelling level) {
+int set_noise_cancelling(int sock, enum NoiseCancelling level) {
 	uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, level };
 	uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, level, 0x0b };
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
-int auto_off(int sock, enum AutoOff minutes) {
+int set_auto_off(int sock, enum AutoOff minutes) {
 	uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, minutes };
 	uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, minutes };
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
-int prompt_language(int sock, enum PromptLanguage language) {
+int set_prompt_language(int sock, enum PromptLanguage language) {
 	uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, language };
 	// TODO: ensure that this value is correct
 	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, language, 0x00, 0x04, 0xc3, 0xde };

@@ -36,8 +36,8 @@ enum PromptLanguage {
 };
 
 int set_name(int sock, const char *name);
-int noise_cancelling(int sock, enum NoiseCancelling level);
-int auto_off(int sock, enum AutoOff minutes);
-int prompt_language(int sock, enum PromptLanguage language);
+int set_noise_cancelling(int sock, enum NoiseCancelling level);
+int set_auto_off(int sock, enum AutoOff minutes);
+int set_prompt_language(int sock, enum PromptLanguage language);
 
 #endif
