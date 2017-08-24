@@ -14,11 +14,12 @@ I cannot ensure that this program works on any other devies.
 Todo
 ----
 
-* Impelement "getters" for current headphone state
+* Implement "getters" for current headphone state
 	* Battery
 	* Current status of all setters currently implemented
 	* Serial number
 	* Firmware version
 	* Date of manufacturing
-* Implment device control
+* Implement device control
+* Get/set volume
 * Any TODOs in the code
