@@ -183,8 +183,6 @@ int main(int argc, char *argv[]) {
 
 	if (status < 0) {
 		perror("Error trying to change setting");
-	} else if (status > 0) {
-		fprintf(stderr, "Error trying to change setting: (%d)\n", status);
 	}
 
 	close(sock);
