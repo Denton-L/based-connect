@@ -11,67 +11,6 @@ static void usage() {
 	// TODO: print usage string
 }
 
-static int parse_nc(const char *string, enum NoiseCancelling *nc) {
-	if (strcmp(optarg, "high") == 0) {
-		*nc = NC_HIGH;
-	} else if (strcmp(optarg, "low") == 0) {
-		*nc = NC_LOW;
-	} else if (strcmp(optarg, "off") == 0) {
-		*nc = NC_OFF;
-	} else {
-		return 1;
-	}
-	return 0;
-}
-
-static int parse_ao(const char *string, enum AutoOff *ao) {
-	int parsed = atoi(string);
-
-	switch (parsed) {
-		case AO_NEVER:
-		case AO_5_MIN:
-		case AO_20_MIN:
-		case AO_40_MIN:
-		case AO_60_MIN:
-		case AO_180_MIN:
-			*ao = parsed;
-			return 0;
-		default:
-			return 1;
-	}
-}
-
-static int parse_pl(const char *string, enum PromptLanguage *pl) {
-	if (strcmp(optarg, "off") == 0) {
-		*pl = PL_OFF;
-	} else if (strcmp(optarg, "en") == 0) {
-		*pl = PL_EN;
-	} else if (strcmp(optarg, "fr") == 0) {
-		*pl = PL_FR;
-	} else if (strcmp(optarg, "it") == 0) {
-		*pl = PL_IT;
-	} else if (strcmp(optarg, "de") == 0) {
-		*pl = PL_DE;
-	} else if (strcmp(optarg, "es") == 0) {
-		*pl = PL_ES;
-	} else if (strcmp(optarg, "pt") == 0) {
-		*pl = PL_PT;
-	} else if (strcmp(optarg, "zh") == 0) {
-		*pl = PL_ZH;
-	} else if (strcmp(optarg, "ko") == 0) {
-		*pl = PL_KO;
-	} else if (strcmp(optarg, "nl") == 0) {
-		*pl = PL_NL;
-	} else if (strcmp(optarg, "ja") == 0) {
-		*pl = PL_JA;
-	} else if (strcmp(optarg, "sv") == 0) {
-		*pl = PL_SV;
-	} else {
-		return 1;
-	}
-	return 0;
-}
-
 static int do_set_name(int sock, const char *arg) {
 	char name_buffer[MAX_NAME_LEN + 1] = { 0 };
 	int status;
@@ -88,38 +27,75 @@ static int do_set_name(int sock, const char *arg) {
 
 static int do_set_noise_cancelling(int sock, const char *arg) {
 	enum NoiseCancelling nc;
-	int status;
 
-	if ((status = parse_nc(arg, &nc)) != 0) {
-		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+	if (strcmp(optarg, "high") == 0) {
+		nc = NC_HIGH;
+	} else if (strcmp(optarg, "low") == 0) {
+		nc = NC_LOW;
+	} else if (strcmp(optarg, "off") == 0) {
+		nc = NC_OFF;
 	} else {
-		status = noise_cancelling(sock, nc);
+		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+		return 1;
 	}
-	return status;
+
+	return noise_cancelling(sock, nc);
 }
 
 static int do_set_auto_off(int sock, const char *arg) {
 	enum AutoOff ao;
-	int status;
 
-	if ((status = parse_ao(arg, &ao)) != 0) {
-		fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
-	} else {
-		status = auto_off(sock, ao);
+	int parsed = atoi(arg);
+
+	switch (parsed) {
+		case AO_NEVER:
+		case AO_5_MIN:
+		case AO_20_MIN:
+		case AO_40_MIN:
+		case AO_60_MIN:
+		case AO_180_MIN:
+			ao = parsed;
+		default:
+			fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+			return 1;
 	}
-	return status;
+
+	return auto_off(sock, ao);
 }
 
 static int do_set_prompt_language(int sock, const char *arg) {
 	enum PromptLanguage pl;
-	int status;
 
-	if ((status = parse_pl(arg, &pl)) != 0) {
-		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
+	if (strcmp(optarg, "off") == 0) {
+		pl = PL_OFF;
+	} else if (strcmp(optarg, "en") == 0) {
+		pl = PL_EN;
+	} else if (strcmp(optarg, "fr") == 0) {
+		pl = PL_FR;
+	} else if (strcmp(optarg, "it") == 0) {
+		pl = PL_IT;
+	} else if (strcmp(optarg, "de") == 0) {
+		pl = PL_DE;
+	} else if (strcmp(optarg, "es") == 0) {
+		pl = PL_ES;
+	} else if (strcmp(optarg, "pt") == 0) {
+		pl = PL_PT;
+	} else if (strcmp(optarg, "zh") == 0) {
+		pl = PL_ZH;
+	} else if (strcmp(optarg, "ko") == 0) {
+		pl = PL_KO;
+	} else if (strcmp(optarg, "nl") == 0) {
+		pl = PL_NL;
+	} else if (strcmp(optarg, "ja") == 0) {
+		pl = PL_JA;
+	} else if (strcmp(optarg, "sv") == 0) {
+		pl = PL_SV;
 	} else {
-		status = prompt_language(sock, pl);
+		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
+		return 1;
 	}
-	return status;
+
+	return prompt_language(sock, pl);
 }
 
 int main(int argc, char *argv[]) {
