@@ -72,6 +72,56 @@ static int parse_pl(const char *string, enum PromptLanguage *pl) {
 	return 0;
 }
 
+static int do_set_name(int sock, const char *arg) {
+	char name_buffer[MAX_NAME_LEN + 1] = { 0 };
+	int status;
+
+	if (strlen(arg) > MAX_NAME_LEN) {
+		fprintf(stderr, "Name exceeds %d character maximum. Truncating.\n", MAX_NAME_LEN);
+		status = 1;
+	} else {
+		strncpy(name_buffer, arg, MAX_NAME_LEN);
+		status = set_name(sock, name_buffer);
+	}
+	return status;
+}
+
+static int do_set_noise_cancelling(int sock, const char *arg) {
+	enum NoiseCancelling nc;
+	int status;
+
+	if ((status = parse_nc(arg, &nc)) != 0) {
+		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+	} else {
+		status = noise_cancelling(sock, nc);
+	}
+	return status;
+}
+
+static int do_set_auto_off(int sock, const char *arg) {
+	enum AutoOff ao;
+	int status;
+
+	if ((status = parse_ao(arg, &ao)) != 0) {
+		fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+	} else {
+		status = auto_off(sock, ao);
+	}
+	return status;
+}
+
+static int do_set_prompt_language(int sock, const char *arg) {
+	enum PromptLanguage pl;
+	int status;
+
+	if ((status = parse_pl(arg, &pl)) != 0) {
+		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
+	} else {
+		status = prompt_language(sock, pl);
+	}
+	return status;
+}
+
 int main(int argc, char *argv[]) {
 	const char *short_opt = "+hn:c:o:l:";
 	const struct option long_opt[] = {
@@ -131,55 +181,20 @@ int main(int argc, char *argv[]) {
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
 		switch (opt) {
 			case 'n':
-				{
-					char name_buffer[MAX_NAME_LEN + 1] = { 0 };
-
-					if (strlen(optarg) > MAX_NAME_LEN) {
-						fprintf(stderr, "Name exceeds %d character maximum. Truncating.\n",
-								MAX_NAME_LEN);
-						status = 1;
-					} else {
-						strncpy(name_buffer, optarg, MAX_NAME_LEN);
-						status = set_name(sock, name_buffer);
-					}
-					break;
-				}
+				status = do_set_name(sock, optarg);
+				break;
 
 			case 'c':
-				{
-					enum NoiseCancelling nc;
-
-					if ((status = parse_nc(optarg, &nc)) != 0) {
-						fprintf(stderr, "Invalid noise cancelling argument: %s\n", optarg);
-					} else {
-						status = noise_cancelling(sock, nc);
-					}
-					break;
-				}
+				status = do_set_noise_cancelling(sock, optarg);
+				break;
 
 			case 'o':
-				{
-					enum AutoOff ao;
-
-					if ((status = parse_ao(optarg, &ao)) != 0) {
-						fprintf(stderr, "Invalid auto-off argument: %s\n", optarg);
-					} else {
-						status = auto_off(sock, ao);
-					}
-					break;
-				}
+				status = do_set_auto_off(sock, optarg);
+				break;
 
 			case 'l':
-				{
-					enum PromptLanguage pl;
-
-					if ((status = parse_pl(optarg, &pl)) != 0) {
-						fprintf(stderr, "Invalid prompt language argument: %s\n", optarg);
-					} else {
-						status = prompt_language(sock, pl);
-					}
-					break;
-				}
+				status = do_set_prompt_language(sock, optarg);
+				break;
 
 			default:
 				abort();
