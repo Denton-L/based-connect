@@ -1,9 +1,9 @@
 #ifndef BASED_H
 #define BASED_H
 
-#include <unistd.h>
-
 #define BOSE_CHANNEL 8
+
+#define MAX_NAME_LEN 0xfe
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -36,8 +36,8 @@ enum PromptLanguage {
 };
 
 int set_name(int sock, const char *name);
-int noise_cancelling(int sock, enum NoiseCancelling level);
-int auto_off(int sock, enum AutoOff minutes);
-int prompt_language(int sock, enum PromptLanguage language);
+int set_noise_cancelling(int sock, enum NoiseCancelling level);
+int set_auto_off(int sock, enum AutoOff minutes);
+int set_prompt_language(int sock, enum PromptLanguage language);
 
 #endif
