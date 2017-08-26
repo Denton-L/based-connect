@@ -146,15 +146,22 @@ int main(int argc, char *argv[]) {
 				break;
 		}
 	}
+
 	str2ba(argv[optind], &address.rc_bdaddr);
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
 		return 1;
 	}
 
+	status = init_connection(sock);
+
 	opt_index = 0;
 	optind = 1;
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
+		if (status) {
+			break;
+		}
+
 		switch (opt) {
 			case 'n':
 				status = do_set_name(sock, optarg);
@@ -174,10 +181,6 @@ int main(int argc, char *argv[]) {
 
 			default:
 				abort();
-		}
-
-		if (status) {
-			break;
 		}
 	}
 
