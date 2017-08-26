@@ -24,17 +24,14 @@ static int write_get(int sock, const void *send, size_t send_n, void *recv, size
 
 static int write_check(int sock, const void *send, size_t send_n,
 		const void *expected, size_t expected_n) {
-	// TODO: fix the bug where this headphones do not write out because we need some sort of handshake
-	// uint8_t buffer[expected_n];
-	// int status;
-	//
-	// if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
-	// 	return status;
-	// }
+	uint8_t buffer[expected_n];
+	int status;
 
-	// return abs(memcmp(expected, buffer, sizeof(buffer)));
-	int status = write(sock, send, send_n);
-	return status >= 0 ? 0 : status;
+	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
+		return status;
+	}
+
+	return abs(memcmp(expected, buffer, sizeof(buffer)));
 }
 
 int init_connection(int sock) {
