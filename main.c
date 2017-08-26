@@ -99,7 +99,7 @@ static int do_set_prompt_language(int sock, const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "+hn:c:o:l:";
+	const char *short_opt = "hn:c:o:l:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "set-name", required_argument, NULL, 'n' },
