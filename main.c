@@ -108,19 +108,10 @@ int main(int argc, char *argv[]) {
 		{ "prompt-language", required_argument, NULL, 'l' },
 		{ 0, 0, 0, 0 }
 	};
-	int opt_index;
-	int opt;
 
 	const struct timeval send_timeout = { 5, 0 };
 	const struct timeval recieve_timeout = { 1, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	struct sockaddr_rc address = {
-		AF_BLUETOOTH,
-		*BDADDR_ANY,
-		BOSE_CHANNEL
-	};
-
-	int status;
 
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
 		perror("Could not set socket send timeout");
@@ -133,7 +124,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Find connection address and verify options
-	opt_index = 0;
+	int opt;
+	int opt_index = 0;
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
 		switch (opt) {
 			case 'h':
@@ -147,13 +139,18 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	struct sockaddr_rc address = {
+		AF_BLUETOOTH,
+		*BDADDR_ANY,
+		BOSE_CHANNEL
+	};
 	str2ba(argv[optind], &address.rc_bdaddr);
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
 		return 1;
 	}
 
-	status = init_connection(sock);
+	int status = init_connection(sock);
 
 	opt_index = 0;
 	optind = 1;
