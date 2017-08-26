@@ -68,7 +68,7 @@ int set_name(int sock, const char *name) {
 	expected[3] = length + 1;
 	strncpy((char *) &expected[CN_BASE_CONF_LEN], name, MAX_NAME_LEN);
 
-	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_PACK_LEN + length, NULL);
+	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_CONF_LEN + length, NULL);
 }
 
 int set_noise_cancelling(int sock, enum NoiseCancelling level) {
