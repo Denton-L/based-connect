@@ -139,6 +139,13 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	if (argc - 1 != optind) {
+		fprintf(stderr, argc <= optind
+				? "An address argument must be given.\n"
+				: "Only one address argument may be given.\n");
+		return 1;
+	}
+
 	struct sockaddr_rc address = {
 		AF_BLUETOOTH,
 		*BDADDR_ANY,
