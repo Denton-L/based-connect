@@ -35,6 +35,7 @@ enum PromptLanguage {
 	PL_SV = 0x32
 };
 
+int init_connection(int sock);
 int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);

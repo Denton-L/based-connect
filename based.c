@@ -37,6 +37,13 @@ static int write_check(int sock, const void *send, size_t send_n,
 	return status >= 0 ? 0 : status;
 }
 
+int init_connection(int sock) {
+	uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
+	int status = write(sock, send, sizeof(send));
+
+	return status < 0 ? status : 0;
+}
+
 int set_name(int sock, const char *name) {
 	uint8_t send[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, 0x00 };
 	uint8_t expected[CN_BASE_CONF_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x03, 0x00, 0x00 };
