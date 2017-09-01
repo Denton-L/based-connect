@@ -43,11 +43,11 @@ static int do_set_name(int sock, const char *arg) {
 static int do_set_noise_cancelling(int sock, const char *arg) {
 	enum NoiseCancelling nc;
 
-	if (strcmp(optarg, "high") == 0) {
+	if (strcmp(arg, "high") == 0) {
 		nc = NC_HIGH;
-	} else if (strcmp(optarg, "low") == 0) {
+	} else if (strcmp(arg, "low") == 0) {
 		nc = NC_LOW;
-	} else if (strcmp(optarg, "off") == 0) {
+	} else if (strcmp(arg, "off") == 0) {
 		nc = NC_OFF;
 	} else {
 		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
@@ -85,29 +85,29 @@ static int do_set_auto_off(int sock, const char *arg) {
 static int do_set_prompt_language(int sock, const char *arg) {
 	enum PromptLanguage pl;
 
-	if (strcmp(optarg, "off") == 0) {
+	if (strcmp(arg, "off") == 0) {
 		pl = PL_OFF;
-	} else if (strcmp(optarg, "en") == 0) {
+	} else if (strcmp(arg, "en") == 0) {
 		pl = PL_EN;
-	} else if (strcmp(optarg, "fr") == 0) {
+	} else if (strcmp(arg, "fr") == 0) {
 		pl = PL_FR;
-	} else if (strcmp(optarg, "it") == 0) {
+	} else if (strcmp(arg, "it") == 0) {
 		pl = PL_IT;
-	} else if (strcmp(optarg, "de") == 0) {
+	} else if (strcmp(arg, "de") == 0) {
 		pl = PL_DE;
-	} else if (strcmp(optarg, "es") == 0) {
+	} else if (strcmp(arg, "es") == 0) {
 		pl = PL_ES;
-	} else if (strcmp(optarg, "pt") == 0) {
+	} else if (strcmp(arg, "pt") == 0) {
 		pl = PL_PT;
-	} else if (strcmp(optarg, "zh") == 0) {
+	} else if (strcmp(arg, "zh") == 0) {
 		pl = PL_ZH;
-	} else if (strcmp(optarg, "ko") == 0) {
+	} else if (strcmp(arg, "ko") == 0) {
 		pl = PL_KO;
-	} else if (strcmp(optarg, "nl") == 0) {
+	} else if (strcmp(arg, "nl") == 0) {
 		pl = PL_NL;
-	} else if (strcmp(optarg, "ja") == 0) {
+	} else if (strcmp(arg, "ja") == 0) {
 		pl = PL_JA;
-	} else if (strcmp(optarg, "sv") == 0) {
+	} else if (strcmp(arg, "sv") == 0) {
 		pl = PL_SV;
 	} else {
 		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
