@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 	const char *short_opt = "hn:c:o:l:";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
-		{ "set-name", required_argument, NULL, 'n' },
+		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
