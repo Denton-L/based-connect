@@ -56,8 +56,12 @@ static int do_set_auto_off(int sock, const char *arg) {
 		case AO_180_MIN:
 			ao = parsed;
 		default:
-			fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
-			return 1;
+			if (strcmp(arg, "never") == 0) {
+				ao = AO_NEVER;
+			} else {
+				fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+				return 1;
+			}
 	}
 
 	return set_auto_off(sock, ao);
