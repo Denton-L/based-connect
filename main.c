@@ -7,8 +7,23 @@
 
 #include "based.h"
 
-static void usage() {
-	// TODO: print usage string
+static void usage(const char *program) {
+	printf("Usage: %s [options] <address>\n"
+			"\taddress: The Bluetooth address of the headphones.\n"
+			"Options:\n"
+			"\t-h, --help\n"
+			"\t\tPrint the help message.\n"
+			"\t-n <name>, --name=<name>\n"
+			"\t\tChange the name of the headphones.\n"
+			"\t-c <level>, --noise-cancelling=<level>\n"
+			"\t\tChange the noise cancelling level.\n"
+			"\t\tlevel: high, low, off\n"
+			"\t-o <minutes>, --auto-off=<minutes>\n"
+			"\t\tChange the auto-off time.\n"
+			"\t\tminutes: never, 5, 20, 40, 50, 180\n"
+			"\t-l <language>, --prompt-language=<language>\n"
+			"\t\tChange the voice-prompt language.\n"
+			"\t\tlanguage: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n", program);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -133,7 +148,7 @@ int main(int argc, char *argv[]) {
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
 		switch (opt) {
 			case 'h':
-				usage();
+				usage(argv[0]);
 				return 0;
 			case '?':
 				// TODO: print out usage string
@@ -147,6 +162,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, argc <= optind
 				? "An address argument must be given.\n"
 				: "Only one address argument may be given.\n");
+		usage(argv[0]);
 		return 1;
 	}
 
