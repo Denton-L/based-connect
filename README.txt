@@ -33,6 +33,9 @@ Options:
 	-f, --firmware-version
 		Print the firmware version on the headphones.
 
+	-b, --battery-level
+		Print the battery level of the headphones as a percent.
+
 Disclaimer
 ----------
 
