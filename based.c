@@ -112,3 +112,18 @@ int get_firmware_version(int sock, char version[6]) {
 	version[5] = '\0';
 	return 0;
 }
+
+int get_battery_level(int sock, unsigned int *level) {
+	uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
+	uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01, 0x00 };
+	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, send, sizeof(send), buffer, sizeof(buffer), expected, mask);
+	if (status != 0) {
+		return status;
+	}
+
+	*level = buffer[4];
+	return 0;
+}

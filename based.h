@@ -41,5 +41,6 @@ int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
 int set_prompt_language(int sock, enum PromptLanguage language);
 int get_firmware_version(int sock, char version[6]);
+int get_battery_level(int sock, unsigned int *level);
 
 #endif

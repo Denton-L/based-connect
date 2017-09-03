@@ -25,7 +25,9 @@ static void usage(const char *program) {
 			"\t\tChange the voice-prompt language.\n"
 			"\t\tlanguage: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
 			"\t-f, --firmware-version\n"
-			"\t\tPrint the firmware version on the headphones.\n", program);
+			"\t\tPrint the firmware version on the headphones.\n"
+			"\t-b, --battery-level\n"
+			"\t\tPrint the battery level of the headphones as a percent.\n", program);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -130,8 +132,20 @@ static int do_get_firmware_version(int sock) {
 	return 0;
 }
 
+static int do_get_battery_level(int sock) {
+	unsigned int level;
+	int status = get_battery_level(sock, &level);
+
+	if (status != 0) {
+		return status;
+	}
+
+	printf("%d\n", level);
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:f";
+	const char *short_opt = "hn:c:o:l:fb";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
@@ -139,6 +153,7 @@ int main(int argc, char *argv[]) {
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
 		{ "firmware-version", no_argument, NULL, 'f' },
+		{ "battery-level", no_argument, NULL, 'b' },
 		{ 0, 0, 0, 0 }
 	};
 
@@ -219,6 +234,10 @@ int main(int argc, char *argv[]) {
 
 			case 'f':
 				status = do_get_firmware_version(sock);
+				break;
+
+			case 'b':
+				status = do_get_battery_level(sock);
 				break;
 
 			default:
