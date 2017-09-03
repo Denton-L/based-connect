@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 				usage(argv[0]);
 				return 0;
 			case '?':
-				// TODO: print out usage string
+				usage(argv[0]);
 				return 1;
 			default:
 				break;
