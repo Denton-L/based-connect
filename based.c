@@ -35,18 +35,24 @@ static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const v
 	return 0;
 }
 
-static int write_check(int sock, const void *send, size_t send_n,
-		const void *expected, size_t expected_n, const void *check_mask) {
-	uint8_t buffer[expected_n];
+static int read_check(int sock, const void *send, size_t send_n,
+		void *buffer, size_t buffer_n, const void *expected, const void *check_mask) {
 	int status;
 
-	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
+	if ((status = write_get(sock, send, send_n, buffer, buffer_n)) < 0) {
 		return status;
 	}
 
 	return abs(check_mask == NULL
-			? memcmp(expected, buffer, sizeof(buffer))
-			: masked_memcmp(expected, buffer, sizeof(buffer), check_mask));
+			? memcmp(expected, buffer, buffer_n)
+			: masked_memcmp(expected, buffer, buffer_n, check_mask));
+}
+
+static int write_check(int sock, const void *send, size_t send_n,
+		const void *expected, size_t expected_n, const void *check_mask) {
+	uint8_t buffer[expected_n];
+
+	return read_check(sock, send, send_n, buffer, sizeof(buffer), expected, check_mask);
 }
 
 int init_connection(int sock) {
