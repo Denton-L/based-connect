@@ -22,49 +22,36 @@ static int write_get(int sock, const void *send, size_t send_n, void *recv, size
 	return 0;
 }
 
-static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const void *mask) {
-	while (num--) {
-		uint8_t m = *(uint8_t *) mask;
-		uint8_t b1 = *(uint8_t *) ptr1 & m;
-		uint8_t b2 = *(uint8_t *) ptr2 & m;
+static int write_check(int sock, const void *send, size_t send_n,
+		const void *expected, size_t expected_n) {
+	uint8_t buffer[expected_n];
 
-		if (b1 != b2) {
-			return b1 - b2;
-		}
-
-		++ptr1;
-		++ptr2;
-		++mask;
-	}
-	return 0;
-}
-
-static int read_check(int sock, const void *send, size_t send_n,
-		void *buffer, size_t buffer_n, const void *expected, const void *check_mask) {
 	int status;
-
-	if ((status = write_get(sock, send, send_n, buffer, buffer_n)) < 0) {
+	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
 		return status;
 	}
 
-	return abs(check_mask == NULL
-			? memcmp(expected, buffer, buffer_n)
-			: masked_memcmp(expected, buffer, buffer_n, check_mask));
-}
-
-static int write_check(int sock, const void *send, size_t send_n,
-		const void *expected, size_t expected_n, const void *check_mask) {
-	uint8_t buffer[expected_n];
-
-	return read_check(sock, send, send_n, buffer, sizeof(buffer), expected, check_mask);
+	return abs(memcmp(expected, buffer, sizeof(buffer)));
 }
 
 int init_connection(int sock) {
 	uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
-	uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05, 0x00, '.', 0x00, '.', 0x00 };
-	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+	uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };
 
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected), mask);
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	if (status < 0) {
+		return status;
+	}
+
+	// Throw away the initial firmware version
+	uint8_t garbage[5];
+	status = read(sock, garbage, 5);
+
+	if (status < 0) {
+		return status;
+	}
+
+	return 0;
 }
 
 int set_name(int sock, const char *name) {
@@ -78,41 +65,42 @@ int set_name(int sock, const char *name) {
 	expected[3] = length + 1;
 	strncpy((char *) &expected[CN_BASE_CONF_LEN], name, MAX_NAME_LEN);
 
-	return write_check(sock, send, CN_BASE_PACK_LEN + length,
-			expected, CN_BASE_CONF_LEN + length, NULL);
+	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_CONF_LEN + length);
 }
 
 int set_noise_cancelling(int sock, enum NoiseCancelling level) {
 	uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, level };
 	uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, level, 0x0b };
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int set_auto_off(int sock, enum AutoOff minutes) {
 	uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, minutes };
 	uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, minutes };
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int set_prompt_language(int sock, enum PromptLanguage language) {
 	uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, language };
 	// TODO: ensure that this value is correct
 	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, language, 0x00, 0x04, 0xc3, 0xde };
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int get_firmware_version(int sock, char version[6]) {
 	uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
-	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05, 0x00, '.', 0x00, '.', 0x00 };
-	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
 
-	int status = read_check(sock, send, sizeof(send), buffer, sizeof(buffer), expected, mask);
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
 		return status;
 	}
 
-	memcpy(version, &buffer[4], 5);
+	status = read(sock, version, 5);
+	if (status < 0) {
+		return status;
+	}
+
 	version[5] = '\0';
 	return 0;
 }
@@ -121,7 +109,7 @@ int get_serial_number(int sock, char serial[0x100]) {
 	uint8_t send[] = { 0x00, 0x07, 0x01, 0x00 };
 	uint8_t expected[] = { 0x00, 0x07, 0x03 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
 		return status;
 	}
@@ -144,15 +132,15 @@ int get_serial_number(int sock, char serial[0x100]) {
 
 int get_battery_level(int sock, unsigned int *level) {
 	uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
-	uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01, 0x00 };
-	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01 };
 
-	int status = read_check(sock, send, sizeof(send), buffer, sizeof(buffer), expected, mask);
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
 		return status;
 	}
 
-	*level = buffer[4];
+	uint8_t byte_level;
+	status = read(sock, &byte_level, 1);
+	*level = byte_level;
 	return 0;
 }
