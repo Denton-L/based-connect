@@ -63,7 +63,6 @@ static int do_set_auto_off(int sock, const char *arg) {
 	int parsed = atoi(arg);
 
 	switch (parsed) {
-		case AO_NEVER:
 		case AO_5_MIN:
 		case AO_20_MIN:
 		case AO_40_MIN:
