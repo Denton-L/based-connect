@@ -23,7 +23,7 @@ static int write_get(int sock, const void *send, size_t send_n, void *recv, size
 }
 
 static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const void *mask) {
-	for (; num-- ; ++ptr1, ++ptr2, ++mask ) {
+	while (num--) {
 		uint8_t m = *(uint8_t *) mask;
 		uint8_t b1 = *(uint8_t *) ptr1 & m;
 		uint8_t b2 = *(uint8_t *) ptr2 & m;
@@ -31,6 +31,10 @@ static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const v
 		if (b1 != b2) {
 			return b1 - b2;
 		}
+
+		++ptr1;
+		++ptr2;
+		++mask;
 	}
 	return 0;
 }
