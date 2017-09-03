@@ -96,3 +96,19 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, language, 0x00, 0x04, 0xc3, 0xde };
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
 }
+
+int get_firmware_version(int sock, char version[6]) {
+	uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
+	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05, 0x00, '.', 0x00, '.', 0x00 };
+	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, send, sizeof(send), buffer, sizeof(buffer), expected, mask);
+	if (status != 0) {
+		return status;
+	}
+
+	memcpy(version, &buffer[4], 5);
+	version[5] = '\0';
+	return 0;
+}

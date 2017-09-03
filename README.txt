@@ -30,6 +30,9 @@ Options:
 		Change the voice-prompt language.
 		language: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv
 
+	-f, --firmware-version
+		Print the firmware version on the headphones.
+
 Disclaimer
 ----------
 

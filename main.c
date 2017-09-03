@@ -23,7 +23,9 @@ static void usage(const char *program) {
 			"\t\tminutes: never, 5, 20, 40, 50, 180\n"
 			"\t-l <language>, --prompt-language=<language>\n"
 			"\t\tChange the voice-prompt language.\n"
-			"\t\tlanguage: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n", program);
+			"\t\tlanguage: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
+			"\t-f, --firmware-version\n"
+			"\t\tPrint the firmware version on the headphones.\n", program);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -116,14 +118,27 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
+static int do_get_firmware_version(int sock) {
+	char version[6];
+	int status = get_firmware_version(sock, version);
+
+	if (status != 0) {
+		return status;
+	}
+
+	printf("%s\n", version);
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:";
+	const char *short_opt = "hn:c:o:l:f";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
+		{ "firmware-version", no_argument, NULL, 'f' },
 		{ 0, 0, 0, 0 }
 	};
 
@@ -200,6 +215,10 @@ int main(int argc, char *argv[]) {
 
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
+				break;
+
+			case 'f':
+				status = do_get_firmware_version(sock);
 				break;
 
 			default:
