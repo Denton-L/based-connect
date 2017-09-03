@@ -24,6 +24,9 @@ static void usage(const char *program) {
 			"\t-l <language>, --prompt-language=<language>\n"
 			"\t\tChange the voice-prompt language.\n"
 			"\t\tlanguage: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
+			"\t-p <status>, --pairing=<status>\n"
+			"\t\tChange whether the headphones are pairing.\n"
+			"\t\tstatus: on, off\n"
 			"\t-f, --firmware-version\n"
 			"\t\tPrint the firmware version on the headphones.\n"
 			"\t-s, --serial-number\n"
@@ -122,6 +125,21 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
+static int do_set_pairing(int sock, const char *arg) {
+	enum Pairing p;
+
+	if (strcmp(arg, "on") == 0) {
+		p = P_ON;
+	} else if (strcmp(arg, "off") == 0) {
+		p = P_OFF;
+	} else {
+		fprintf(stderr, "Invalid pairing argument: %s\n", arg);
+		return 1;
+	}
+
+	return set_pairing(sock, p);
+}
+
 static int do_get_firmware_version(int sock) {
 	char version[6];
 	int status = get_firmware_version(sock, version);
@@ -159,13 +177,14 @@ static int do_get_battery_level(int sock) {
 }
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:fsb";
+	const char *short_opt = "hn:c:o:l:p:fsb";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
+		{ "pairing", required_argument, NULL, 'p' },
 		{ "firmware-version", no_argument, NULL, 'f' },
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
@@ -245,6 +264,10 @@ int main(int argc, char *argv[]) {
 
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
+				break;
+
+			case 'p':
+				status = do_set_pairing(sock, optarg);
 				break;
 
 			case 'f':

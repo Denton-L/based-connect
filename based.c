@@ -87,6 +87,12 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
+int set_pairing(int sock, enum Pairing pairing) {
+	uint8_t send[] = { 0x04, 0x08, 0x05, 0x01, pairing };
+	uint8_t expected[] = { 0x04, 0x08, 0x06, 0x01, pairing };
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+}
+
 int get_firmware_version(int sock, char version[6]) {
 	uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
 	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };

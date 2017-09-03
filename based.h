@@ -35,11 +35,17 @@ enum PromptLanguage {
 	PL_SV = 0x32
 };
 
+enum Pairing {
+	P_ON = 0x01,
+	P_OFF = 0x00
+};
+
 int init_connection(int sock);
 int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
 int set_prompt_language(int sock, enum PromptLanguage language);
+int set_pairing(int sock, enum Pairing pairing);
 int get_firmware_version(int sock, char version[6]);
 int get_serial_number(int sock, char serial[0x100]);
 int get_battery_level(int sock, unsigned int *level);
