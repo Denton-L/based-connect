@@ -35,18 +35,24 @@ static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const v
 	return 0;
 }
 
-static int write_check(int sock, const void *send, size_t send_n,
-		const void *expected, size_t expected_n, const void *check_mask) {
-	uint8_t buffer[expected_n];
+static int read_check(int sock, const void *send, size_t send_n,
+		void *buffer, size_t buffer_n, const void *expected, const void *check_mask) {
 	int status;
 
-	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
+	if ((status = write_get(sock, send, send_n, buffer, buffer_n)) < 0) {
 		return status;
 	}
 
 	return abs(check_mask == NULL
-			? memcmp(expected, buffer, sizeof(buffer))
-			: masked_memcmp(expected, buffer, sizeof(buffer), check_mask));
+			? memcmp(expected, buffer, buffer_n)
+			: masked_memcmp(expected, buffer, buffer_n, check_mask));
+}
+
+static int write_check(int sock, const void *send, size_t send_n,
+		const void *expected, size_t expected_n, const void *check_mask) {
+	uint8_t buffer[expected_n];
+
+	return read_check(sock, send, send_n, buffer, sizeof(buffer), expected, check_mask);
 }
 
 int init_connection(int sock) {
@@ -89,4 +95,20 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	// TODO: ensure that this value is correct
 	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, language, 0x00, 0x04, 0xc3, 0xde };
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+}
+
+int get_firmware_version(int sock, char version[6]) {
+	uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
+	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05, 0x00, '.', 0x00, '.', 0x00 };
+	uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00 };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, send, sizeof(send), buffer, sizeof(buffer), expected, mask);
+	if (status != 0) {
+		return status;
+	}
+
+	memcpy(version, &buffer[4], 5);
+	version[5] = '\0';
+	return 0;
 }
