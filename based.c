@@ -113,6 +113,31 @@ int get_firmware_version(int sock, char version[6]) {
 	return 0;
 }
 
+int get_serial_number(int sock, char serial[0x100]) {
+	uint8_t send[] = { 0x00, 0x07, 0x01, 0x00 };
+	uint8_t expected[] = { 0x00, 0x07, 0x03 };
+
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected), NULL);
+	if (status != 0) {
+		return status;
+	}
+
+	uint8_t length;
+
+	status = read(sock, &length, 1);
+	if (status < 0) {
+		return status;
+	}
+
+	status = read(sock, serial, length);
+	if (status < 0) {
+		return status;
+	}
+	serial[length] = '\0';
+
+	return 0;
+}
+
 int get_battery_level(int sock, unsigned int *level) {
 	uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
 	uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01, 0x00 };
