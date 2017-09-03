@@ -30,6 +30,10 @@ Options:
 		Change the voice-prompt language.
 		language: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv
 
+	-p <status>, --pairing=<status>
+		Change whether the headphones are pairing.
+		status: on, off
+
 	-f, --firmware-version
 		Print the firmware version on the headphones.
 
