@@ -43,21 +43,24 @@ Options:
 	-b, --battery-level
 		Print the battery level of the headphones as a percent.
 
+Building
+--------
+
+Simply run `make -j` to build the program. The executable produced will be
+called `based-connect`.
+
 Disclaimer
 ----------
 
-I have only tested these on my own Bose QuietComfort 35's with firmware 1.3.2.
-I cannot ensure that this program works on any other devies.
+I have only tested these on Bose QuietComfort 35's with firmware 1.3.2 and
+SoundLink II headphones with firmware 2.1.1. I cannot ensure that this program
+works on any other devies.
 
 Todo
 ----
 
 * Implement "getters" for current headphone state
-	* Battery
 	* Current status of all setters currently implemented
-	* Serial number
-	* Firmware version
 	* Date of manufacturing
 * Implement device control
 * Get/set volume
-* Any TODOs in the code
