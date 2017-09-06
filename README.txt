@@ -49,6 +49,12 @@ Building
 Simply run `make -j` to build the program. The executable produced will be
 called `based-connect`.
 
+Installing
+----------
+
+Run `make install` to install the program. The `PREFIX` and `DESTDIR` variables
+are assignable and have the traditional meaning.
+
 Dependencies
 ------------
 
