@@ -49,6 +49,13 @@ Building
 Simply run `make -j` to build the program. The executable produced will be
 called `based-connect`.
 
+Dependencies
+------------
+
+* BlueZ
+	* bluez-libs on Arch Linux
+	* libbluetooth-dev on Debian and Ubuntu
+
 Disclaimer
 ----------
 
