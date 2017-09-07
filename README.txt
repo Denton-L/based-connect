@@ -55,6 +55,10 @@ Installing
 Run `make install` to install the program. The `PREFIX` and `DESTDIR` variables
 are assignable and have the traditional meaning.
 
+Alternatively, if you run Arch Linux, you can download it from the AUR here:
+
+https://aur.archlinux.org/packages/based-connect-git/
+
 Dependencies
 ------------
 
