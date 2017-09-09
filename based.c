@@ -10,26 +10,16 @@
 #define CN_BASE_PACK_LEN 4
 #define CN_BASE_CONF_LEN 5
 
-static int write_get(int sock, const void *send, size_t send_n, void *recv, size_t recv_n) {
-	int status;
-
-	if ((status = write(sock, send, send_n)) < 0) {
-		return status;
-	}
-
-	if ((status = read(sock, recv, recv_n)) < 0) {
-		return status;
-	}
-
-	return 0;
-}
-
 static int write_check(int sock, const void *send, size_t send_n,
 		const void *expected, size_t expected_n) {
 	uint8_t buffer[expected_n];
 
 	int status;
-	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
+	if ((status = write(sock, send, send_n)) < 0) {
+		return status;
+	}
+
+	if ((status = read(sock, buffer, sizeof(buffer))) < 0) {
 		return status;
 	}
 
