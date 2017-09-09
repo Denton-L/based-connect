@@ -7,7 +7,7 @@
 #include "bluetooth.h"
 
 #define BOSE_CHANNEL 8
-#define MAX_NAME_LEN 0x20
+#define MAX_NAME_LEN 0x1f
 #define MAX_NUM_DEVICES 8
 
 enum NoiseCancelling {
