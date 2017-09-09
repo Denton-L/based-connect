@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "based.h"
+#include "bluetooth.h"
 
 static void usage(const char *program) {
 	printf("Usage: %s [options] <address>\n"
@@ -32,7 +33,9 @@ static void usage(const char *program) {
 			"\t-s, --serial-number\n"
 			"\t\tPrint the serial number of the headphones.\n"
 			"\t-b, --battery-level\n"
-			"\t\tPrint the battery level of the headphones as a percent.\n", program);
+			"\t\tPrint the battery level of the headphones as a percent.\n"
+			"\t-d, --devices\n"
+			"\t\tPrint the devices currently connected to the headphones.\n", program);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -176,8 +179,63 @@ static int do_get_battery_level(int sock) {
 	return 0;
 }
 
+static int do_get_devices(int sock) {
+	bdaddr_t devices[MAX_NUM_DEVICES];
+	size_t num_devices;
+	enum DevicesConnected connected;
+
+	int status = get_devices(sock, devices, &num_devices, &connected);
+	if (status != 0) {
+		return status;
+	}
+
+	unsigned int num_connected;
+	switch (connected) {
+		case DC_ONE:
+			num_connected = 1;
+			break;
+		case DC_TWO:
+			num_connected = 2;
+			break;
+		default:
+			abort();
+	}
+	printf("Devices connected: %d\n", num_connected);
+
+	size_t i;
+	for (i = 0; i < num_devices; ++i) {
+		struct Device device;
+		status = get_device_info(sock, devices[i], &device);
+		if (status != 0) {
+			return status;
+		}
+
+		char address[18];
+		reverse_ba2str(&device.address, address);
+
+		char status_symb;
+		switch (device.status) {
+			case DS_THIS:
+				status_symb = '!';
+				break;
+			case DS_CONNECTED:
+				status_symb = '*';
+				break;
+			case DS_DISCONNECTED:
+				status_symb = ' ';
+				break;
+			default:
+				abort();
+		}
+
+		printf("%c %17s %s\n", status_symb, address, device.name);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:p:fsb";
+	const char *short_opt = "hn:c:o:l:p:fsbd";
 	const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
@@ -188,6 +246,7 @@ int main(int argc, char *argv[]) {
 		{ "firmware-version", no_argument, NULL, 'f' },
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
+		{ "devices", no_argument, NULL, 'd' },
 		{ 0, 0, 0, 0 }
 	};
 
@@ -280,6 +339,10 @@ int main(int argc, char *argv[]) {
 
 			case 'b':
 				status = do_get_battery_level(sock);
+				break;
+
+			case 'd':
+				status = do_get_devices(sock);
 				break;
 
 			default:
