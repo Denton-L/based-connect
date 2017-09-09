@@ -43,6 +43,11 @@ Options:
 	-b, --battery-level
 		Print the battery level of the headphones as a percent.
 
+	-d, --devices
+		Print the devices currently connected to the headphones.
+		!: indicates the current device
+		*: indicates other connected devices
+
 Building
 --------
 

@@ -1,9 +1,14 @@
 #ifndef BASED_H
 #define BASED_H
 
-#define BOSE_CHANNEL 8
+#include <bluetooth/bluetooth.h>
+#include <stddef.h>
 
-#define MAX_NAME_LEN 0xfe
+#include "bluetooth.h"
+
+#define BOSE_CHANNEL 8
+#define MAX_NAME_LEN 0x20
+#define MAX_NUM_DEVICES 8
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -40,6 +45,23 @@ enum Pairing {
 	P_OFF = 0x00
 };
 
+enum DeviceStatus {
+	DS_THIS = 0x03,
+	DS_CONNECTED = 0x01,
+	DS_DISCONNECTED = 0x00
+};
+
+enum DevicesConnected {
+	DC_ONE = 0x01,
+	DC_TWO = 0x03
+};
+
+struct Device {
+	bdaddr_t address;
+	enum DeviceStatus status;
+	char name[MAX_NAME_LEN + 1];
+};
+
 int init_connection(int sock);
 int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
@@ -49,5 +71,8 @@ int set_pairing(int sock, enum Pairing pairing);
 int get_firmware_version(int sock, char version[6]);
 int get_serial_number(int sock, char serial[0x100]);
 int get_battery_level(int sock, unsigned int *level);
+int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+		enum DevicesConnected *connected);
+int get_device_info(int sock, bdaddr_t address, struct Device *device);
 
 #endif
