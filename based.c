@@ -7,29 +7,20 @@
 #include "based.h"
 #include "bluetooth.h"
 
+#define ANY 0x00
 #define CN_BASE_PACK_LEN 4
 #define CN_BASE_CONF_LEN 5
-
-static int write_get(int sock, const void *send, size_t send_n, void *recv, size_t recv_n) {
-	int status;
-
-	if ((status = write(sock, send, send_n)) < 0) {
-		return status;
-	}
-
-	if ((status = read(sock, recv, recv_n)) < 0) {
-		return status;
-	}
-
-	return 0;
-}
 
 static int write_check(int sock, const void *send, size_t send_n,
 		const void *expected, size_t expected_n) {
 	uint8_t buffer[expected_n];
 
 	int status;
-	if ((status = write_get(sock, send, send_n, buffer, sizeof(buffer))) < 0) {
+	if ((status = write(sock, send, send_n)) < 0) {
+		return status;
+	}
+
+	if ((status = read(sock, buffer, sizeof(buffer))) < 0) {
 		return status;
 	}
 
@@ -37,8 +28,8 @@ static int write_check(int sock, const void *send, size_t send_n,
 }
 
 int init_connection(int sock) {
-	uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
-	uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };
+	static const uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status < 0) {
@@ -47,7 +38,7 @@ int init_connection(int sock) {
 
 	// Throw away the initial firmware version
 	uint8_t garbage[5];
-	status = read(sock, garbage, 5);
+	status = read(sock, garbage, sizeof(garbage));
 
 	if (status < 0) {
 		return status;
@@ -57,8 +48,8 @@ int init_connection(int sock) {
 }
 
 int set_name(int sock, const char *name) {
-	uint8_t send[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, 0x00 };
-	uint8_t expected[CN_BASE_CONF_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x03, 0x00, 0x00 };
+	static uint8_t send[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, ANY };
+	static uint8_t expected[CN_BASE_CONF_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x03, ANY, 0x00 };
 	size_t length = strlen(name);
 
 	send[3] = length;
@@ -71,33 +62,41 @@ int set_name(int sock, const char *name) {
 }
 
 int set_noise_cancelling(int sock, enum NoiseCancelling level) {
-	uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, level };
-	uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, level, 0x0b };
+	static uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, ANY };
+	static uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
+	send[4] = level;
+	expected[4] = level;
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int set_auto_off(int sock, enum AutoOff minutes) {
-	uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, minutes };
-	uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, minutes };
+	static uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, ANY };
+	static uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
+	send[4] = minutes;
+	expected[4] = minutes;
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int set_prompt_language(int sock, enum PromptLanguage language) {
-	uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, language };
+	static uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, ANY };
 	// TODO: ensure that this value is correct
-	uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, language, 0x00, 0x04, 0xc3, 0xde };
+	static uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, 0x04, 0xc3, 0xde };
+	send[4] = language;
+	expected[4] = language;
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int set_pairing(int sock, enum Pairing pairing) {
-	uint8_t send[] = { 0x04, 0x08, 0x05, 0x01, pairing };
-	uint8_t expected[] = { 0x04, 0x08, 0x06, 0x01, pairing };
+	static uint8_t send[] = { 0x04, 0x08, 0x05, 0x01, ANY };
+	static uint8_t expected[] = { 0x04, 0x08, 0x06, 0x01, ANY };
+	send[4] = pairing;
+	expected[4] = pairing;
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
 int get_firmware_version(int sock, char version[6]) {
-	uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
-	uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
+	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
@@ -114,8 +113,8 @@ int get_firmware_version(int sock, char version[6]) {
 }
 
 int get_serial_number(int sock, char serial[0x100]) {
-	uint8_t send[] = { 0x00, 0x07, 0x01, 0x00 };
-	uint8_t expected[] = { 0x00, 0x07, 0x03 };
+	static const uint8_t send[] = { 0x00, 0x07, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x00, 0x07, 0x03 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
@@ -139,24 +138,24 @@ int get_serial_number(int sock, char serial[0x100]) {
 }
 
 int get_battery_level(int sock, unsigned int *level) {
-	uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
-	uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01 };
+	static const uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
 		return status;
 	}
 
-	uint8_t byte_level;
-	status = read(sock, &byte_level, 1);
-	*level = byte_level;
+	uint8_t level_byte;
+	status = read(sock, &level_byte, 1);
+	*level = level_byte;
 	return 0;
 }
 
 int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected) {
-	uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
-	uint8_t expected[] = { 0x04, 0x04, 0x03 };
+	static const uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
 	if (status != 0) {
@@ -194,8 +193,8 @@ int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devic
 }
 
 int get_device_info(int sock, bdaddr_t address, struct Device *device) {
-	uint8_t send[10] = { 0x04, 0x05, 0x01, BT_ADDR_LEN };
-	uint8_t expected[] = { 0x04, 0x05, 0x03 };
+	static uint8_t send[10] = { 0x04, 0x05, 0x01, BT_ADDR_LEN };
+	static const uint8_t expected[] = { 0x04, 0x05, 0x03 };
 
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
 

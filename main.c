@@ -235,8 +235,8 @@ static int do_get_devices(int sock) {
 }
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:p:fsbd";
-	const struct option long_opt[] = {
+	static const char *short_opt = "hn:c:o:l:p:fsbd";
+	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
@@ -250,8 +250,8 @@ int main(int argc, char *argv[]) {
 		{ 0, 0, 0, 0 }
 	};
 
-	const struct timeval send_timeout = { 5, 0 };
-	const struct timeval recieve_timeout = { 1, 0 };
+	static const struct timeval send_timeout = { 5, 0 };
+	static const struct timeval recieve_timeout = { 1, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
@@ -288,12 +288,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	struct sockaddr_rc address = {
-		AF_BLUETOOTH,
-		*BDADDR_ANY,
-		BOSE_CHANNEL
-	};
+	struct sockaddr_rc address;
+	address.rc_family = AF_BLUETOOTH;
+	address.rc_channel = BOSE_CHANNEL;
 	str2ba(argv[optind], &address.rc_bdaddr);
+
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
 		return 1;
@@ -312,39 +311,30 @@ int main(int argc, char *argv[]) {
 			case 'n':
 				status = do_set_name(sock, optarg);
 				break;
-
 			case 'c':
 				status = do_set_noise_cancelling(sock, optarg);
 				break;
-
 			case 'o':
 				status = do_set_auto_off(sock, optarg);
 				break;
-
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
 				break;
-
 			case 'p':
 				status = do_set_pairing(sock, optarg);
 				break;
-
 			case 'f':
 				status = do_get_firmware_version(sock);
 				break;
-
 			case 's':
 				status = do_get_serial_number(sock);
 				break;
-
 			case 'b':
 				status = do_get_battery_level(sock);
 				break;
-
 			case 'd':
 				status = do_get_devices(sock);
 				break;
-
 			default:
 				abort();
 		}
