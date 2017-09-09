@@ -37,7 +37,7 @@ int init_connection(int sock) {
 
 	// Throw away the initial firmware version
 	uint8_t garbage[5];
-	status = read(sock, garbage, 5);
+	status = read(sock, garbage, sizeof(garbage));
 
 	if (status < 0) {
 		return status;
