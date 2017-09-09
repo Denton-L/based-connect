@@ -235,8 +235,8 @@ static int do_get_devices(int sock) {
 }
 
 int main(int argc, char *argv[]) {
-	const char *short_opt = "hn:c:o:l:p:fsbd";
-	const struct option long_opt[] = {
+	static const char *short_opt = "hn:c:o:l:p:fsbd";
+	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
@@ -250,8 +250,8 @@ int main(int argc, char *argv[]) {
 		{ 0, 0, 0, 0 }
 	};
 
-	const struct timeval send_timeout = { 5, 0 };
-	const struct timeval recieve_timeout = { 1, 0 };
+	static const struct timeval send_timeout = { 5, 0 };
+	static const struct timeval recieve_timeout = { 1, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
