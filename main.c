@@ -208,6 +208,24 @@ static int do_get_devices(int sock) {
 	return 0;
 }
 
+static int do_connect_device(int sock, const char *arg) {
+	bdaddr_t address;
+	reverse_str2ba(arg, &address);
+	return connect_device(sock, address);
+}
+
+static int do_disconnect_device(int sock, const char *arg) {
+	bdaddr_t address;
+	reverse_str2ba(arg, &address);
+	return disconnect_device(sock, address);
+}
+
+static int do_remove_device(int sock, const char *arg) {
+	bdaddr_t address;
+	reverse_str2ba(arg, &address);
+	return remove_device(sock, address);
+}
+
 int main(int argc, char *argv[]) {
 	static const char *short_opt = "hn:c:o:l:p:fsbd";
 	static const struct option long_opt[] = {
@@ -221,6 +239,9 @@ int main(int argc, char *argv[]) {
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
 		{ "devices", no_argument, NULL, 'd' },
+		{ "connect-device", required_argument, NULL, 1 },
+		{ "disconnect-device", required_argument, NULL, 2 },
+		{ "remove-device", required_argument, NULL, 3 },
 		{ 0, 0, 0, 0 }
 	};
 
@@ -308,6 +329,15 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'd':
 				status = do_get_devices(sock);
+				break;
+			case 1:
+				status = do_connect_device(sock, optarg);
+				break;
+			case 2:
+				status = do_disconnect_device(sock, optarg);
+				break;
+			case 3:
+				status = do_remove_device(sock, optarg);
 				break;
 			default:
 				abort();

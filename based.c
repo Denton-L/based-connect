@@ -245,3 +245,27 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 
 	return 0;
 }
+
+int connect_device(int sock, bdaddr_t address) {
+	static uint8_t send[11] = { 0x04, 0x01, 0x05, BT_ADDR_LEN + 1, 0x00 };
+	static uint8_t expected[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
+	memcpy(&send[5], &address.b, BT_ADDR_LEN);
+	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+}
+
+int disconnect_device(int sock, bdaddr_t address) {
+	static uint8_t send[10] = { 0x04, 0x02, 0x05, BT_ADDR_LEN };
+	static uint8_t expected[10] = { 0x04, 0x02, 0x07, BT_ADDR_LEN };
+	memcpy(&send[4], &address.b, BT_ADDR_LEN);
+	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+}
+
+int remove_device(int sock, bdaddr_t address) {
+	static uint8_t send[10] = { 0x04, 0x03, 0x05, BT_ADDR_LEN };
+	static uint8_t expected[10] = { 0x04, 0x03, 0x06, BT_ADDR_LEN };
+	memcpy(&send[4], &address.b, BT_ADDR_LEN);
+	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+}
