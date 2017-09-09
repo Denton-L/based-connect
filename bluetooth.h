@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef BLUETOOTH_H
+#define BLUETOOTH_H
 
 #include <bluetooth/bluetooth.h>
 
