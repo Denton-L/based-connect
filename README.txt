@@ -93,5 +93,4 @@ Todo
 * Implement "getters" for current headphone state
 	* Current status of all setters currently implemented
 	* Date of manufacturing
-* Implement device control
 * Get/set volume
