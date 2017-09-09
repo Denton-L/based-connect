@@ -1,22 +1,22 @@
 based-connect
 =============
 
-If you own Bose headphones, you'll know that Bose Connect is not available on
+If you own a Bose device, you'll know that Bose Connect is not available on
 Linux. This program attempts to reverse engineer that app in order to give the
-headphones Linux support.
+device Linux support.
 
 Usage
 -----
 
 ./based-connect [options] <address>
-	address: The Bluetooth address of the headphones.
+	address: The Bluetooth address of the device.
 
 Options:
 	-h, --help
 		Print the help message.
 
 	-n <name>, --name=<name>
-		Change the name of the headphones.
+		Change the name of the device.
 
 	-c <level>, --noise-cancelling=<level>
 		Change the noise cancelling level.
@@ -31,20 +31,20 @@ Options:
 		language: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv
 
 	-p <status>, --pairing=<status>
-		Change whether the headphones are pairing.
+		Change whether the device is pairing.
 		status: on, off
 
 	-f, --firmware-version
-		Print the firmware version on the headphones.
+		Print the firmware version on the device.
 
 	-s, --serial-number
-		Print the serial number of the headphones.
+		Print the serial number of the device.
 
 	-b, --battery-level
-		Print the battery level of the headphones as a percent.
+		Print the battery level of the device as a percent.
 
 	-d, --devices
-		Print the devices currently connected to the headphones.
+		Print the devices currently connected to the device.
 		!: indicates the current device
 		*: indicates other connected devices
 
@@ -74,8 +74,8 @@ Dependencies
 Disclaimer
 ----------
 
-I have only tested these on Bose QuietComfort 35's with firmware 1.3.2 and
-SoundLink II headphones with firmware 2.1.1. I cannot ensure that this program
+This has only been tested on Bose QuietComfort 35's with firmware 1.3.2, 1.2.9,
+1.06 and SoundLink II's with firmware 2.1.1. I cannot ensure that this program
 works on any other devies.
 
 Todo
