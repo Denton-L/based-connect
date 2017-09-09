@@ -74,5 +74,8 @@ int get_battery_level(int sock, unsigned int *level);
 int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected);
 int get_device_info(int sock, bdaddr_t address, struct Device *device);
+int connect_device(int sock, bdaddr_t address);
+int disconnect_device(int sock, bdaddr_t address);
+int remove_device(int sock, bdaddr_t address);
 
 #endif
