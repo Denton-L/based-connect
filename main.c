@@ -288,12 +288,11 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	struct sockaddr_rc address = {
-		AF_BLUETOOTH,
-		*BDADDR_ANY,
-		BOSE_CHANNEL
-	};
+	struct sockaddr_rc address;
+	address.rc_family = AF_BLUETOOTH;
+	address.rc_channel = BOSE_CHANNEL;
 	str2ba(argv[optind], &address.rc_bdaddr);
+
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
 		return 1;
@@ -312,39 +311,30 @@ int main(int argc, char *argv[]) {
 			case 'n':
 				status = do_set_name(sock, optarg);
 				break;
-
 			case 'c':
 				status = do_set_noise_cancelling(sock, optarg);
 				break;
-
 			case 'o':
 				status = do_set_auto_off(sock, optarg);
 				break;
-
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
 				break;
-
 			case 'p':
 				status = do_set_pairing(sock, optarg);
 				break;
-
 			case 'f':
 				status = do_get_firmware_version(sock);
 				break;
-
 			case 's':
 				status = do_get_serial_number(sock);
 				break;
-
 			case 'b':
 				status = do_get_battery_level(sock);
 				break;
-
 			case 'd':
 				status = do_get_devices(sock);
 				break;
-
 			default:
 				abort();
 		}

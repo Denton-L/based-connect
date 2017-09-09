@@ -146,9 +146,9 @@ int get_battery_level(int sock, unsigned int *level) {
 		return status;
 	}
 
-	uint8_t byte_level;
-	status = read(sock, &byte_level, 1);
-	*level = byte_level;
+	uint8_t level_byte;
+	status = read(sock, &level_byte, 1);
+	*level = level_byte;
 	return 0;
 }
 
