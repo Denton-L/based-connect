@@ -94,3 +94,5 @@ Todo
 	* Current status of all setters currently implemented
 	* Date of manufacturing
 * Get/set volume
+* Port to MacOS (and maybe Windows)
+* Firmware updates?
