@@ -27,6 +27,15 @@ static int write_check(int sock, const void *send, size_t send_n,
 	return abs(memcmp(expected, buffer, sizeof(buffer)));
 }
 
+int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]) {
+	int status;
+	if ((status = write(sock, send, send_n)) < 0) {
+		return status;
+	}
+
+	return read(sock, recieved, MAX_BT_PACK_LEN);
+}
+
 int init_connection(int sock) {
 	static const uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
 	static const uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };

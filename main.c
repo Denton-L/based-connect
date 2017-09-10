@@ -7,6 +7,7 @@
 
 #include "based.h"
 #include "bluetooth.h"
+#include "util.h"
 
 static void usage(const char *program) {
 	printf("Usage: %s [options] <address>\n", program);
@@ -226,6 +227,28 @@ static int do_remove_device(int sock, const char *arg) {
 	return remove_device(sock, address);
 }
 
+static int do_send_packet(int sock, const char *arg) {
+	uint8_t send[sizeof(arg) / 2];
+	size_t i;
+	for (i = 0; arg[i * 2]; ++i) {
+		if (strtobyte(&arg[i * 2], &send[i]) != 0) {
+			return 1;
+		}
+	}
+
+	uint8_t recieved[MAX_BT_PACK_LEN];
+	int recieved_n = send_packet(sock, send, sizeof(send), recieved);
+	if (recieved_n < 0) {
+		return recieved_n;
+	}
+
+	for (i = 0; i < recieved_n; ++i) {
+		printf("%02x ", recieved[i]);
+	}
+	printf("\n");
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	static const char *short_opt = "hn:c:o:l:p:fsbd";
 	static const struct option long_opt[] = {
@@ -239,9 +262,10 @@ int main(int argc, char *argv[]) {
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
 		{ "paired-devices", no_argument, NULL, 'd' },
-		{ "connect-device", required_argument, NULL, 1 },
-		{ "disconnect-device", required_argument, NULL, 2 },
-		{ "remove-device", required_argument, NULL, 3 },
+		{ "connect-device", required_argument, NULL, 2 },
+		{ "disconnect-device", required_argument, NULL, 3 },
+		{ "remove-device", required_argument, NULL, 4 },
+		{ "send-packet", required_argument, NULL, 1 },
 		{ 0, 0, 0, 0 }
 	};
 
@@ -330,14 +354,17 @@ int main(int argc, char *argv[]) {
 			case 'd':
 				status = do_get_paired_devices(sock);
 				break;
-			case 1:
+			case 2:
 				status = do_connect_device(sock, optarg);
 				break;
-			case 2:
+			case 3:
 				status = do_disconnect_device(sock, optarg);
 				break;
-			case 3:
+			case 4:
 				status = do_remove_device(sock, optarg);
+				break;
+			case 1:
+				status = do_send_packet(sock, optarg);
 				break;
 			default:
 				abort();
