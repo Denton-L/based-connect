@@ -43,7 +43,7 @@ Options:
 	-b, --battery-level
 		Print the battery level of the device as a percent.
 
-	-d, --devices
+	-d, --paired-devices
 		Print the devices currently connected to the device.
 		!: indicates the current device
 		*: indicates other connected devices

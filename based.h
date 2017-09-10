@@ -71,7 +71,7 @@ int set_pairing(int sock, enum Pairing pairing);
 int get_firmware_version(int sock, char version[6]);
 int get_serial_number(int sock, char serial[0x100]);
 int get_battery_level(int sock, unsigned int *level);
-int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected);
 int get_device_info(int sock, bdaddr_t address, struct Device *device);
 int connect_device(int sock, bdaddr_t address);

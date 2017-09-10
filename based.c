@@ -152,7 +152,7 @@ int get_battery_level(int sock, unsigned int *level) {
 	return 0;
 }
 
-int get_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected) {
 	static const uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
 	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };

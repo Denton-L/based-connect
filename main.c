@@ -153,12 +153,12 @@ static int do_get_battery_level(int sock) {
 	return 0;
 }
 
-static int do_get_devices(int sock) {
+static int do_get_paired_devices(int sock) {
 	bdaddr_t devices[MAX_NUM_DEVICES];
 	size_t num_devices;
 	enum DevicesConnected connected;
 
-	int status = get_devices(sock, devices, &num_devices, &connected);
+	int status = get_paired_devices(sock, devices, &num_devices, &connected);
 	if (status != 0) {
 		return status;
 	}
@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
 		{ "firmware-version", no_argument, NULL, 'f' },
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
-		{ "devices", no_argument, NULL, 'd' },
+		{ "paired-devices", no_argument, NULL, 'd' },
 		{ "connect-device", required_argument, NULL, 1 },
 		{ "disconnect-device", required_argument, NULL, 2 },
 		{ "remove-device", required_argument, NULL, 3 },
@@ -328,7 +328,7 @@ int main(int argc, char *argv[]) {
 				status = do_get_battery_level(sock);
 				break;
 			case 'd':
-				status = do_get_devices(sock);
+				status = do_get_paired_devices(sock);
 				break;
 			case 1:
 				status = do_connect_device(sock, optarg);
