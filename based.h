@@ -79,5 +79,6 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device);
 int connect_device(int sock, bdaddr_t address);
 int disconnect_device(int sock, bdaddr_t address);
 int remove_device(int sock, bdaddr_t address);
+int get_device_id(int sock, unsigned int *device_id, unsigned int *index);
 
 #endif
