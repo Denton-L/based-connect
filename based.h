@@ -9,6 +9,7 @@
 #define BOSE_CHANNEL 8
 #define MAX_NAME_LEN 0x1f
 #define MAX_NUM_DEVICES 8
+#define MAX_BT_PACK_LEN 0x1000
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -63,6 +64,7 @@ struct Device {
 };
 
 int init_connection(int sock);
+int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]);
 int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
