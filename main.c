@@ -227,6 +227,19 @@ static int do_remove_device(int sock, const char *arg) {
 	return remove_device(sock, address);
 }
 
+static int do_get_device_id(int sock) {
+	unsigned int device_id;
+	unsigned int index;
+	int status = get_device_id(sock, &device_id, &index);
+
+	if (status != 0) {
+		return status;
+	}
+
+	printf("0x%04x %d\n", device_id, index);
+	return 0;
+}
+
 static int do_send_packet(int sock, const char *arg) {
 	uint8_t send[sizeof(arg) / 2];
 	size_t i;
@@ -265,6 +278,7 @@ int main(int argc, char *argv[]) {
 		{ "connect-device", required_argument, NULL, 2 },
 		{ "disconnect-device", required_argument, NULL, 3 },
 		{ "remove-device", required_argument, NULL, 4 },
+		{ "device-id", no_argument, NULL, 5 },
 		{ "send-packet", required_argument, NULL, 1 },
 		{ 0, 0, 0, 0 }
 	};
@@ -362,6 +376,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 4:
 				status = do_remove_device(sock, optarg);
+				break;
+			case 5:
+				status = do_get_device_id(sock);
 				break;
 			case 1:
 				status = do_send_packet(sock, optarg);

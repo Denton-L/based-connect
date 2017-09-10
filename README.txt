@@ -57,6 +57,9 @@ Options:
 	--remove-device=<address>
 		Removes the device at address from the pairing list.
 
+	--device-id
+		Print the device id followed by the index revision.
+
 Building
 --------
 

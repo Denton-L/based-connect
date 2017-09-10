@@ -278,3 +278,31 @@ int remove_device(int sock, bdaddr_t address) {
 	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
+
+int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
+	static const uint8_t send[] = { 0x00, 0x03, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x00, 0x03, 0x03, 0x03 };
+
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	if (status != 0) {
+		return status;
+	}
+
+	uint16_t device_id_halfword;
+	status = read(sock, &device_id_halfword, 2);
+	if (status < 0) {
+		return status;
+	}
+	// reverse endianness
+	device_id_halfword = (device_id_halfword >> 8) | (device_id_halfword << 8);
+	*device_id = device_id_halfword;
+
+	uint8_t index_byte;
+	status = read(sock, &index_byte, 1);
+	if (status < 0) {
+		return status;
+	}
+	*index = index_byte;
+
+	return 0;
+}
