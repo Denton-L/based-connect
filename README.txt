@@ -49,13 +49,13 @@ Options:
 		*: indicates other connected devices
 
 	--connect-device=<address>
-		Attempts to connect to the device at address.
+		Attempt to connect to the device at address.
 
 	--disconnect-device=<address>
-		Disconnects the device at address.
+		Disconnect the device at address.
 
 	--remove-device=<address>
-		Removes the device at address from the pairing list.
+		Remove the device at address from the pairing list.
 
 	--device-id
 		Print the device id followed by the index revision.

@@ -203,7 +203,7 @@ static int do_get_paired_devices(int sock) {
 				abort();
 		}
 
-		printf("%c %17s %s\n", status_symb, address, device.name);
+		printf("%c %s %s\n", status_symb, address, device.name);
 	}
 
 	return 0;
