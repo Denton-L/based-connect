@@ -56,6 +56,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 		case AO_60_MIN:
 		case AO_180_MIN:
 			ao = parsed;
+			break;
 		default:
 			if (strcmp(arg, "never") == 0) {
 				ao = AO_NEVER;
