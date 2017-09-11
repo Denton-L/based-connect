@@ -56,6 +56,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 		case AO_60_MIN:
 		case AO_180_MIN:
 			ao = parsed;
+			break;
 		default:
 			if (strcmp(arg, "never") == 0) {
 				ao = AO_NEVER;
@@ -122,7 +123,7 @@ static int do_get_firmware_version(int sock) {
 	char version[6];
 	int status = get_firmware_version(sock, version);
 
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -134,7 +135,7 @@ static int do_get_serial_number(int sock) {
 	char serial[0x100];
 	int status = get_serial_number(sock, serial);
 
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -146,7 +147,7 @@ static int do_get_battery_level(int sock) {
 	unsigned int level;
 	int status = get_battery_level(sock, &level);
 
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -160,7 +161,7 @@ static int do_get_paired_devices(int sock) {
 	enum DevicesConnected connected;
 
 	int status = get_paired_devices(sock, devices, &num_devices, &connected);
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -173,7 +174,7 @@ static int do_get_paired_devices(int sock) {
 			num_connected = 2;
 			break;
 		default:
-			abort();
+			return 1;
 	}
 	printf("Devices connected: %d\n", num_connected);
 
@@ -181,7 +182,7 @@ static int do_get_paired_devices(int sock) {
 	for (i = 0; i < num_devices; ++i) {
 		struct Device device;
 		status = get_device_info(sock, devices[i], &device);
-		if (status != 0) {
+		if (status) {
 			return status;
 		}
 
@@ -200,7 +201,7 @@ static int do_get_paired_devices(int sock) {
 				status_symb = ' ';
 				break;
 			default:
-				abort();
+				return 1;
 		}
 
 		printf("%c %s %s\n", status_symb, address, device.name);
@@ -232,7 +233,7 @@ static int do_get_device_id(int sock) {
 	unsigned int index;
 	int status = get_device_id(sock, &device_id, &index);
 
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -384,7 +385,7 @@ int main(int argc, char *argv[]) {
 				status = do_send_packet(sock, optarg);
 				break;
 			default:
-				abort();
+				status = 1;
 		}
 	}
 

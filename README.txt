@@ -24,7 +24,7 @@ Options:
 
 	-o <minutes>, --auto-off=<minutes>
 		Change the auto-off time.
-		minutes: never, 5, 20, 40, 50, 180
+		minutes: never, 5, 20, 40, 60, 180
 
 	-l <language>, --prompt-language=<language>
 		Change the voice-prompt language.

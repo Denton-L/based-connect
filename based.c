@@ -108,7 +108,7 @@ int get_firmware_version(int sock, char version[6]) {
 	static const uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -126,7 +126,7 @@ int get_serial_number(int sock, char serial[0x100]) {
 	static const uint8_t expected[] = { 0x00, 0x07, 0x03 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -151,7 +151,7 @@ int get_battery_level(int sock, unsigned int *level) {
 	static const uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -167,7 +167,7 @@ int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *nu
 	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -208,7 +208,7 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
@@ -225,7 +225,7 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	length -= BT_ADDR_LEN;
 
 	status = memcmp(&address.b, &device->address.b, BT_ADDR_LEN);
-	if (status != 0) {
+	if (status) {
 		return abs(status);
 	}
 
@@ -284,7 +284,7 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 	static const uint8_t expected[] = { 0x00, 0x03, 0x03, 0x03 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status != 0) {
+	if (status) {
 		return status;
 	}
 
