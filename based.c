@@ -11,20 +11,40 @@
 #define CN_BASE_PACK_LEN 4
 #define CN_BASE_CONF_LEN 5
 
+static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const void *mask) {
+	while (num-- > 0) {
+		uint8_t mask_byte = *(uint8_t *) mask++;
+		uint8_t byte1 = *(uint8_t *) ptr1++ & mask_byte;
+		uint8_t byte2 = *(uint8_t *) ptr2++ & mask_byte;
+
+		if (byte1 != byte2) {
+			return byte1 - byte2;
+		}
+	}
+	return 0;
+}
+
+static int read_check(int sock, void *recieve, size_t recieve_n, const void *expected,
+		const void *mask) {
+	int status = read(sock, recieve, recieve_n);
+	if (status != recieve_n) {
+		return status ? status : 1;
+	}
+
+	return abs(mask
+			? masked_memcmp(expected, recieve, recieve_n, mask)
+			: memcmp(expected, recieve, recieve_n));
+}
+
 static int write_check(int sock, const void *send, size_t send_n,
 		const void *expected, size_t expected_n) {
 	uint8_t buffer[expected_n];
 
-	int status;
-	if ((status = write(sock, send, send_n)) < 0) {
-		return status;
+	int status = write(sock, send, send_n);
+	if (status) {
+		return status ? status : 1;
 	}
-
-	if ((status = read(sock, buffer, sizeof(buffer))) < 0) {
-		return status;
-	}
-
-	return abs(memcmp(expected, buffer, sizeof(buffer)));
+	return read_check(sock, buffer, sizeof(buffer), expected, NULL);
 }
 
 int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]) {
