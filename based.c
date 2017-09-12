@@ -9,7 +9,6 @@
 
 #define ANY 0x00
 #define CN_BASE_PACK_LEN 4
-#define CN_BASE_CONF_LEN 5
 
 static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const void *mask) {
 	while (num-- > 0) {
@@ -41,7 +40,7 @@ static int write_check(int sock, const void *send, size_t send_n,
 	uint8_t buffer[expected_n];
 
 	int status = write(sock, send, send_n);
-	if (status) {
+	if (status != send_n) {
 		return status ? status : 1;
 	}
 	return read_check(sock, buffer, sizeof(buffer), expected, NULL);
@@ -69,50 +68,150 @@ int init_connection(int sock) {
 	uint8_t garbage[5];
 	status = read(sock, garbage, sizeof(garbage));
 
-	if (status < 0) {
+	if (status != sizeof(garbage)) {
+		return status ? status : 1;
+	}
+
+	return 0;
+}
+
+static int get_name(int sock, char name[MAX_NAME_LEN + 1]) {
+	static const uint8_t expected[] = { 0x01, 0x02, 0x03, ANY, 0x00 };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0x00, 0xff };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
 		return status;
 	}
+
+	size_t length = buffer[3] - 1;
+	status = read(sock, name, length);
+	if (status != length) {
+		return status ? status : 1;
+	}
+	name[length] = '\0';
 
 	return 0;
 }
 
 int set_name(int sock, const char *name) {
 	static uint8_t send[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, ANY };
-	static uint8_t expected[CN_BASE_CONF_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x03, ANY, 0x00 };
 	size_t length = strlen(name);
 
 	send[3] = length;
 	strncpy((char *) &send[CN_BASE_PACK_LEN], name, MAX_NAME_LEN);
 
-	expected[3] = length + 1;
-	strncpy((char *) &expected[CN_BASE_CONF_LEN], name, MAX_NAME_LEN);
+	size_t send_size = CN_BASE_PACK_LEN + length;
+	int status = write(sock, send, send_size);
+	if (status != send_size) {
+		return status ? status : 1;
+	}
 
-	return write_check(sock, send, CN_BASE_PACK_LEN + length, expected, CN_BASE_CONF_LEN + length);
+	char got_name[MAX_NAME_LEN + 1];
+	status = get_name(sock, got_name);
+	if (status) {
+		return status;
+	}
+
+	return abs(strcmp(name, got_name));
+}
+
+static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
+	static const uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
+		return status;
+	}
+
+	*level = buffer[4];
+	return 0;
 }
 
 int set_noise_cancelling(int sock, enum NoiseCancelling level) {
 	static uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, ANY };
-	static uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
 	send[4] = level;
-	expected[4] = level;
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	enum NoiseCancelling got_level;
+	status = get_noise_cancelling(sock, &got_level);
+	if (status) {
+		return status;
+	}
+
+	return abs(level - got_level);
+}
+
+static int get_auto_off(int sock, enum AutoOff *minutes) {
+	static const uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
+		return status;
+	}
+
+	*minutes = buffer[4];
+	return 0;
 }
 
 int set_auto_off(int sock, enum AutoOff minutes) {
 	static uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, ANY };
-	static uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
 	send[4] = minutes;
-	expected[4] = minutes;
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	enum AutoOff got_minutes;
+	status = get_auto_off(sock, &got_minutes);
+	if (status) {
+		return status;
+	}
+
+	return abs(minutes - got_minutes);
+}
+
+static int get_prompt_language(int sock, enum PromptLanguage *language) {
+	// TODO: ensure that this value is correct
+	static const uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, 0x04, 0xc3, 0xde };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
+		return status;
+	}
+
+	*language = buffer[4];
+	return 0;
 }
 
 int set_prompt_language(int sock, enum PromptLanguage language) {
 	static uint8_t send[] = { 0x01, 0x03, 0x02, 0x01, ANY };
-	// TODO: ensure that this value is correct
-	static uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, 0x04, 0xc3, 0xde };
 	send[4] = language;
-	expected[4] = language;
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	enum PromptLanguage got_language;
+	status = get_prompt_language(sock, &got_language);
+	if (status) {
+		return status;
+	}
+
+	return abs(language - got_language);
 }
 
 int set_pairing(int sock, enum Pairing pairing) {
