@@ -120,7 +120,7 @@ static int do_set_pairing(int sock, const char *arg) {
 }
 
 static int do_get_firmware_version(int sock) {
-	char version[6];
+	char version[VER_STR_LEN + 1];
 	int status = get_firmware_version(sock, version);
 
 	if (status) {

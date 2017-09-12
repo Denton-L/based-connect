@@ -10,6 +10,7 @@
 #define MAX_NAME_LEN 0x1f
 #define MAX_NUM_DEVICES 8
 #define MAX_BT_PACK_LEN 0x1000
+#define VER_STR_LEN 5
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -70,7 +71,7 @@ int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
 int set_prompt_language(int sock, enum PromptLanguage language);
 int set_pairing(int sock, enum Pairing pairing);
-int get_firmware_version(int sock, char version[6]);
+int get_firmware_version(int sock, char version[VER_STR_LEN + 1]);
 int get_serial_number(int sock, char serial[0x100]);
 int get_battery_level(int sock, unsigned int *level);
 int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,

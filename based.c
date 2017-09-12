@@ -47,9 +47,9 @@ static int write_check(int sock, const void *send, size_t send_n,
 }
 
 int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]) {
-	int status;
-	if ((status = write(sock, send, send_n)) < 0) {
-		return status;
+	int status = write(sock, send, send_n);
+	if (status != send_n) {
+		return status ? status : 1;
 	}
 
 	return read(sock, recieved, MAX_BT_PACK_LEN);
@@ -60,7 +60,7 @@ int init_connection(int sock) {
 	static const uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };
 
 	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status < 0) {
+	if (status) {
 		return status;
 	}
 
@@ -222,7 +222,7 @@ int set_pairing(int sock, enum Pairing pairing) {
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
 }
 
-int get_firmware_version(int sock, char version[6]) {
+int get_firmware_version(int sock, char version[VER_STR_LEN + 1]) {
 	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
 	static const uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
 
@@ -231,12 +231,12 @@ int get_firmware_version(int sock, char version[6]) {
 		return status;
 	}
 
-	status = read(sock, version, 5);
-	if (status < 0) {
-		return status;
+	status = read(sock, version, VER_STR_LEN);
+	if (status != VER_STR_LEN) {
+		return status ? status : 1;
 	}
 
-	version[5] = '\0';
+	version[VER_STR_LEN] = '\0';
 	return 0;
 }
 
@@ -250,15 +250,14 @@ int get_serial_number(int sock, char serial[0x100]) {
 	}
 
 	uint8_t length;
-
 	status = read(sock, &length, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 
 	status = read(sock, serial, length);
-	if (status < 0) {
-		return status;
+	if (status != length) {
+		return status ? status : 1;
 	}
 	serial[length] = '\0';
 
@@ -292,8 +291,8 @@ int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *nu
 
 	uint8_t num_devices_byte;
 	status = read(sock, &num_devices_byte, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 
 	// num_devices_byte = (num_devices_byte - 1) / BT_ADDR_LEN;
@@ -304,16 +303,16 @@ int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *nu
 
 	uint8_t num_connected_byte;
 	status = read(sock, &num_connected_byte, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 	*connected = num_connected_byte;
 
 	size_t i;
 	for (i = 0; i < num_devices_byte; ++i) {
 		status = read(sock, &addresses[i].b, BT_ADDR_LEN);
-		if (status < 0) {
-			return status;
+		if (status != BT_ADDR_LEN) {
+			return status ? status : 1;
 		}
 	}
 
@@ -333,13 +332,13 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 
 	uint8_t length;
 	status = read(sock, &length, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 
 	status = read(sock, &device->address.b, BT_ADDR_LEN);
-	if (status < 0) {
-		return status;
+	if (status != BT_ADDR_LEN) {
+		return status ? status : 1;
 	}
 	length -= BT_ADDR_LEN;
 
@@ -350,8 +349,8 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 
 	uint8_t status_byte;
 	status = read(sock, &status_byte, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 	length -= 1;
 
@@ -360,14 +359,14 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	// TODO: figure out what the first byte of garbage is for
 	uint8_t garbage[2];
 	status = read(sock, &garbage, sizeof(garbage));
-	if (status < 0) {
-		return status;
+	if (status != sizeof(garbage)) {
+		return status ? status : 1;
 	}
 	length -= sizeof(garbage);
 
 	status = read(sock, device->name, length);
-	if (status < 0) {
-		return status;
+	if (status != length) {
+		return status ? status : 1;
 	}
 	device->name[length] = '\0';
 
@@ -408,9 +407,9 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 	}
 
 	uint16_t device_id_halfword;
-	status = read(sock, &device_id_halfword, 2);
-	if (status < 0) {
-		return status;
+	status = read(sock, &device_id_halfword, sizeof(device_id_halfword));
+	if (status != sizeof(device_id_halfword)) {
+		return status ? status : 1;
 	}
 	// reverse endianness
 	device_id_halfword = (device_id_halfword >> 8) | (device_id_halfword << 8);
@@ -418,8 +417,8 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 
 	uint8_t index_byte;
 	status = read(sock, &index_byte, 1);
-	if (status < 0) {
-		return status;
+	if (status != 1) {
+		return status ? status : 1;
 	}
 	*index = index_byte;
 
