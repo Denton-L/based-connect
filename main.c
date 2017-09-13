@@ -183,7 +183,7 @@ static int do_get_device_status(int sock) {
 	printf("Language: %s\n", print);
 	printf("Voice Prompts: %s\n", pl & VP_MASK ? "on" : "off");
 
-	printf("Auto-off: ");
+	printf("Auto-Off: ");
 	if (ao) {
 		printf("%d", ao);
 	} else {
@@ -205,7 +205,7 @@ static int do_get_device_status(int sock) {
 			default:
 				return 1;
 		}
-		printf("Noise cancelling: %s\n", print);
+		printf("Noise Cancelling: %s\n", print);
 	}
 
 	return 0;
