@@ -70,6 +70,8 @@ int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
 int set_prompt_language(int sock, enum PromptLanguage language);
+int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
+		enum AutoOff *minutes, enum NoiseCancelling *level);
 int set_pairing(int sock, enum Pairing pairing);
 int get_firmware_version(int sock, char version[VER_STR_LEN + 1]);
 int get_serial_number(int sock, char serial[0x100]);

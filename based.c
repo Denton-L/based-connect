@@ -214,6 +214,48 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	return abs(language - got_language);
 }
 
+int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
+		enum AutoOff *minutes, enum NoiseCancelling *level) {
+	static const uint8_t send[] = { 0x01, 0x01, 0x05, 0x00 };
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	static const uint8_t expected1[] = { 0x01, 0x01, 0x07, 0x00 };
+	uint8_t buffer1[sizeof(expected1)];
+
+	status = read_check(sock, buffer1, sizeof(buffer1), expected1, NULL);
+	if (status) {
+		return status;
+	}
+
+	status = get_name(sock, name);
+	if (status) {
+		return status;
+	}
+
+	status = get_prompt_language(sock, language);
+	if (status) {
+		return status;
+	}
+
+	status = get_auto_off(sock, minutes);
+	if (status) {
+		return status;
+	}
+
+	status = get_noise_cancelling(sock, level);
+	if (status) {
+		return status;
+	}
+
+	static const uint8_t expected2[] = { 0x01, 0x01, 0x06, 0x00 };
+	uint8_t buffer2[sizeof(expected2)];
+	return read_check(sock, buffer2, sizeof(buffer2), expected2, NULL);
+}
+
 int set_pairing(int sock, enum Pairing pairing) {
 	static uint8_t send[] = { 0x04, 0x08, 0x05, 0x01, ANY };
 	static uint8_t expected[] = { 0x04, 0x08, 0x06, 0x01, ANY };

@@ -104,6 +104,88 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
+static int do_get_device_status(int sock) {
+	char name[MAX_NAME_LEN + 1];
+	enum PromptLanguage pl;
+	enum AutoOff ao;
+	enum NoiseCancelling nc;
+
+	int status = get_device_status(sock, name, &pl, &ao, &nc);
+	if (status) {
+		return status;
+	}
+
+	char *print;
+	printf("Name: %s\n", name);
+
+	switch (pl) {
+		case PL_OFF:
+			print = "off";
+			break;
+		case PL_EN:
+			print = "en";
+			break;
+		case PL_FR:
+			print = "fr";
+			break;
+		case PL_IT:
+			print = "it";
+			break;
+		case PL_DE:
+			print = "de";
+			break;
+		case PL_ES:
+			print = "es";
+			break;
+		case PL_PT:
+			print = "pt";
+			break;
+		case PL_ZH:
+			print = "zh";
+			break;
+		case PL_KO:
+			print = "ko";
+			break;
+		case PL_NL:
+			print = "nl";
+			break;
+		case PL_JA:
+			print = "ja";
+			break;
+		case PL_SV:
+			print = "sv";
+			break;
+		default:
+			return 1;
+	}
+	printf("Language: %s\n", print);
+
+	printf("Auto-off: ");
+	if (ao) {
+		printf("%d", ao);
+	} else {
+		printf("never");
+	}
+	printf("\n");
+
+	switch (nc) {
+		case NC_HIGH:
+			print = "high";
+			break;
+		case NC_LOW:
+			print = "low";
+			break;
+		case NC_OFF:
+			print = "off";
+			break;
+		default:
+			return 1;
+	}
+	printf("Noise cancelling: %s\n", print);
+
+	return 0;
+}
+
 static int do_set_pairing(int sock, const char *arg) {
 	enum Pairing p;
 
@@ -264,18 +346,19 @@ static int do_send_packet(int sock, const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
-	static const char *short_opt = "hn:c:o:l:p:fsbd";
+	static const char *short_opt = "hn:c:o:l:dp:fsba";
 	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
+		{ "device-status", no_argument, NULL, 'd' },
 		{ "pairing", required_argument, NULL, 'p' },
 		{ "firmware-version", no_argument, NULL, 'f' },
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
-		{ "paired-devices", no_argument, NULL, 'd' },
+		{ "paired-devices", no_argument, NULL, 'a' },
 		{ "connect-device", required_argument, NULL, 2 },
 		{ "disconnect-device", required_argument, NULL, 3 },
 		{ "remove-device", required_argument, NULL, 4 },
@@ -354,6 +437,9 @@ int main(int argc, char *argv[]) {
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
 				break;
+			case 'd':
+				status = do_get_device_status(sock);
+				break;
 			case 'p':
 				status = do_set_pairing(sock, optarg);
 				break;
@@ -366,7 +452,7 @@ int main(int argc, char *argv[]) {
 			case 'b':
 				status = do_get_battery_level(sock);
 				break;
-			case 'd':
+			case 'a':
 				status = do_get_paired_devices(sock);
 				break;
 			case 2:
