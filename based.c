@@ -10,6 +10,17 @@
 #define ANY 0x00
 #define CN_BASE_PACK_LEN 4
 
+int has_noise_cancelling(unsigned int device_id) {
+	switch (device_id) {
+		case 0x4014:
+		case 0x4020:
+		case 0x400c:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
 static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const void *mask) {
 	while (num-- > 0) {
 		uint8_t mask_byte = *(uint8_t *) mask++;
@@ -236,9 +247,15 @@ int set_voice_prompts(int sock, int on) {
 
 int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level) {
-	static const uint8_t send[] = { 0x01, 0x01, 0x05, 0x00 };
+	unsigned int device_id;
+	unsigned int index;
+	int status = get_device_id(sock, &device_id, &index);
+	if (status) {
+		return status;
+	}
 
-	int status = write(sock, send, sizeof(send));
+	static const uint8_t send[] = { 0x01, 0x01, 0x05, 0x00 };
+	status = write(sock, send, sizeof(send));
 	if (status != sizeof(send)) {
 		return status ? status : 1;
 	}
@@ -266,9 +283,13 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 		return status;
 	}
 
-	status = get_noise_cancelling(sock, level);
-	if (status) {
-		return status;
+	if (has_noise_cancelling(device_id)) {
+		status = get_noise_cancelling(sock, level);
+		if (status) {
+			return status;
+		}
+	} else {
+		*level = NC_DNE;
 	}
 
 	static const uint8_t expected2[] = { 0x01, 0x01, 0x06, 0x00 };

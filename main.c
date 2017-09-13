@@ -41,6 +41,18 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 		return 1;
 	}
 
+	unsigned int device_id;
+	unsigned int index;
+	int status = get_device_id(sock, &device_id, &index);
+	if (status) {
+		return status;
+	}
+
+	if (!has_noise_cancelling(device_id)) {
+		fprintf(stderr, "This device does not have noise cancelling.");
+		return 1;
+	}
+
 	return set_noise_cancelling(sock, nc);
 }
 
@@ -179,20 +191,22 @@ static int do_get_device_status(int sock) {
 	}
 	printf("\n");
 
-	switch (nc) {
-		case NC_HIGH:
-			print = "high";
-			break;
-		case NC_LOW:
-			print = "low";
-			break;
-		case NC_OFF:
-			print = "off";
-			break;
-		default:
-			return 1;
+	if (nc != NC_DNE) {
+		switch (nc) {
+			case NC_HIGH:
+				print = "high";
+				break;
+			case NC_LOW:
+				print = "low";
+				break;
+			case NC_OFF:
+				print = "off";
+				break;
+			default:
+				return 1;
+		}
+		printf("Noise cancelling: %s\n", print);
 	}
-	printf("Noise cancelling: %s\n", print);
 
 	return 0;
 }

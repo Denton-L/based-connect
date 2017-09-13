@@ -16,7 +16,8 @@
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
 	NC_LOW = 0x03,
-	NC_OFF = 0x00
+	NC_OFF = 0x00,
+	NC_DNE = 0xff
 };
 
 enum AutoOff {
@@ -64,6 +65,7 @@ struct Device {
 	char name[MAX_NAME_LEN + 1];
 };
 
+int has_noise_cancelling(unsigned int device_id);
 int init_connection(int sock);
 int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]);
 int set_name(int sock, const char *name);
