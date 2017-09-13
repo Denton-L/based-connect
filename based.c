@@ -194,8 +194,9 @@ int set_auto_off(int sock, enum AutoOff minutes) {
 
 static int get_prompt_language(int sock, enum PromptLanguage *language) {
 	// TODO: ensure that this value is correct
-	static const uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, 0x04, 0xc3, 0xde };
-	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff };
+	// TODO: figure out what bytes 6 and 7 are for
+	static const uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, ANY, ANY, 0xde };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff };
 	uint8_t buffer[sizeof(expected)];
 
 	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
