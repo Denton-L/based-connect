@@ -72,9 +72,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 static int do_set_prompt_language(int sock, const char *arg) {
 	enum PromptLanguage pl;
 
-	if (strcmp(arg, "off") == 0) {
-		pl = PL_OFF;
-	} else if (strcmp(arg, "en") == 0) {
+	if (strcmp(arg, "en") == 0) {
 		pl = PL_EN;
 	} else if (strcmp(arg, "fr") == 0) {
 		pl = PL_FR;
@@ -104,6 +102,21 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
+static int do_set_voice_prompts(int sock, const char *arg) {
+	int on;
+
+	if (strcmp(arg, "on") == 0) {
+		on = 1;
+	} else if (strcmp(arg, "off") == 0) {
+		on = 0;
+	} else {
+		fprintf(stderr, "Invalid voice prompt argument: %s\n", arg);
+		return 1;
+	}
+
+	return set_voice_prompts(sock, on);
+}
+
 static int do_get_device_status(int sock) {
 	char name[MAX_NAME_LEN + 1];
 	enum PromptLanguage pl;
@@ -118,10 +131,7 @@ static int do_get_device_status(int sock) {
 	char *print;
 	printf("Name: %s\n", name);
 
-	switch (pl) {
-		case PL_OFF:
-			print = "off";
-			break;
+	switch (pl | VP_MASK) {
 		case PL_EN:
 			print = "en";
 			break;
@@ -159,6 +169,7 @@ static int do_get_device_status(int sock) {
 			return 1;
 	}
 	printf("Language: %s\n", print);
+	printf("Voice Prompts: %s\n", pl & VP_MASK ? "on" : "off");
 
 	printf("Auto-off: ");
 	if (ao) {
@@ -346,13 +357,14 @@ static int do_send_packet(int sock, const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
-	static const char *short_opt = "hn:c:o:l:dp:fsba";
+	static const char *short_opt = "hn:c:o:l:v:dp:fsba";
 	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
 		{ "noise-cancelling", required_argument, NULL, 'c' },
 		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
+		{ "voice-prompts", required_argument, NULL, 'v' },
 		{ "device-status", no_argument, NULL, 'd' },
 		{ "pairing", required_argument, NULL, 'p' },
 		{ "firmware-version", no_argument, NULL, 'f' },
@@ -436,6 +448,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'l':
 				status = do_set_prompt_language(sock, optarg);
+				break;
+			case 'v':
+				status = do_set_voice_prompts(sock, optarg);
 				break;
 			case 'd':
 				status = do_get_device_status(sock);

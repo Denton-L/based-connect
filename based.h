@@ -11,6 +11,7 @@
 #define MAX_NUM_DEVICES 8
 #define MAX_BT_PACK_LEN 0x1000
 #define VER_STR_LEN 5
+#define VP_MASK 0x20
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -28,7 +29,6 @@ enum AutoOff {
 };
 
 enum PromptLanguage {
-	PL_OFF = 0x01,
 	PL_EN = 0x21,
 	PL_FR = 0x22,
 	PL_IT = 0x23,
@@ -70,6 +70,7 @@ int set_name(int sock, const char *name);
 int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int set_auto_off(int sock, enum AutoOff minutes);
 int set_prompt_language(int sock, enum PromptLanguage language);
+int set_voice_prompts(int sock, int on);
 int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level);
 int set_pairing(int sock, enum Pairing pairing);

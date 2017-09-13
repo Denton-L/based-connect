@@ -214,6 +214,26 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	return abs(language - got_language);
 }
 
+int set_voice_prompts(int sock, int on) {
+	char name[MAX_NAME_LEN + 1];
+	enum PromptLanguage pl;
+	enum AutoOff ao;
+	enum NoiseCancelling nc;
+
+	int status = get_device_status(sock, name, &pl, &ao, &nc);
+	if (status) {
+		return status;
+	}
+
+	if (on) {
+		pl |= VP_MASK;
+	} else {
+		pl &= ~VP_MASK;
+	}
+
+	return set_prompt_language(sock, pl);
+}
+
 int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level) {
 	static const uint8_t send[] = { 0x01, 0x01, 0x05, 0x00 };
