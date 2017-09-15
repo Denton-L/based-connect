@@ -86,6 +86,34 @@ int init_connection(int sock) {
 	return 0;
 }
 
+int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
+	static const uint8_t send[] = { 0x00, 0x03, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x00, 0x03, 0x03, 0x03 };
+
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	if (status) {
+		return status;
+	}
+
+	uint16_t device_id_halfword;
+	status = read(sock, &device_id_halfword, sizeof(device_id_halfword));
+	if (status != sizeof(device_id_halfword)) {
+		return status ? status : 1;
+	}
+	// reverse endianness
+	device_id_halfword = (device_id_halfword >> 8) | (device_id_halfword << 8);
+	*device_id = device_id_halfword;
+
+	uint8_t index_byte;
+	status = read(sock, &index_byte, 1);
+	if (status != 1) {
+		return status ? status : 1;
+	}
+	*index = index_byte;
+
+	return 0;
+}
+
 static int get_name(int sock, char name[MAX_NAME_LEN + 1]) {
 	static const uint8_t expected[] = { 0x01, 0x02, 0x03, ANY, 0x00 };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0x00, 0xff };
@@ -126,70 +154,6 @@ int set_name(int sock, const char *name) {
 	}
 
 	return abs(strcmp(name, got_name));
-}
-
-static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
-	static const uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
-	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff };
-	uint8_t buffer[sizeof(expected)];
-
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
-	if (status) {
-		return status;
-	}
-
-	*level = buffer[4];
-	return 0;
-}
-
-int set_noise_cancelling(int sock, enum NoiseCancelling level) {
-	static uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, ANY };
-	send[4] = level;
-
-	int status = write(sock, send, sizeof(send));
-	if (status != sizeof(send)) {
-		return status ? status : 1;
-	}
-
-	enum NoiseCancelling got_level;
-	status = get_noise_cancelling(sock, &got_level);
-	if (status) {
-		return status;
-	}
-
-	return abs(level - got_level);
-}
-
-static int get_auto_off(int sock, enum AutoOff *minutes) {
-	static const uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
-	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
-	uint8_t buffer[sizeof(expected)];
-
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
-	if (status) {
-		return status;
-	}
-
-	*minutes = buffer[4];
-	return 0;
-}
-
-int set_auto_off(int sock, enum AutoOff minutes) {
-	static uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, ANY };
-	send[4] = minutes;
-
-	int status = write(sock, send, sizeof(send));
-	if (status != sizeof(send)) {
-		return status ? status : 1;
-	}
-
-	enum AutoOff got_minutes;
-	status = get_auto_off(sock, &got_minutes);
-	if (status) {
-		return status;
-	}
-
-	return abs(minutes - got_minutes);
 }
 
 static int get_prompt_language(int sock, enum PromptLanguage *language) {
@@ -244,6 +208,70 @@ int set_voice_prompts(int sock, int on) {
 	}
 
 	return set_prompt_language(sock, pl);
+}
+
+static int get_auto_off(int sock, enum AutoOff *minutes) {
+	static const uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
+		return status;
+	}
+
+	*minutes = buffer[4];
+	return 0;
+}
+
+int set_auto_off(int sock, enum AutoOff minutes) {
+	static uint8_t send[] = { 0x01, 0x04, 0x02, 0x01, ANY };
+	send[4] = minutes;
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	enum AutoOff got_minutes;
+	status = get_auto_off(sock, &got_minutes);
+	if (status) {
+		return status;
+	}
+
+	return abs(minutes - got_minutes);
+}
+
+static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
+	static const uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
+	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff };
+	uint8_t buffer[sizeof(expected)];
+
+	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	if (status) {
+		return status;
+	}
+
+	*level = buffer[4];
+	return 0;
+}
+
+int set_noise_cancelling(int sock, enum NoiseCancelling level) {
+	static uint8_t send[] = { 0x01, 0x06, 0x02, 0x01, ANY };
+	send[4] = level;
+
+	int status = write(sock, send, sizeof(send));
+	if (status != sizeof(send)) {
+		return status ? status : 1;
+	}
+
+	enum NoiseCancelling got_level;
+	status = get_noise_cancelling(sock, &got_level);
+	if (status) {
+		return status;
+	}
+
+	return abs(level - got_level);
 }
 
 int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
@@ -363,46 +391,6 @@ int get_battery_level(int sock, unsigned int *level) {
 	return 0;
 }
 
-int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
-		enum DevicesConnected *connected) {
-	static const uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };
-
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status) {
-		return status;
-	}
-
-	uint8_t num_devices_byte;
-	status = read(sock, &num_devices_byte, 1);
-	if (status != 1) {
-		return status ? status : 1;
-	}
-
-	// num_devices_byte = (num_devices_byte - 1) / BT_ADDR_LEN;
-	// equivalent statements but more efficient
-	num_devices_byte /= BT_ADDR_LEN;
-
-	*num_devices = num_devices_byte;
-
-	uint8_t num_connected_byte;
-	status = read(sock, &num_connected_byte, 1);
-	if (status != 1) {
-		return status ? status : 1;
-	}
-	*connected = num_connected_byte;
-
-	size_t i;
-	for (i = 0; i < num_devices_byte; ++i) {
-		status = read(sock, &addresses[i].b, BT_ADDR_LEN);
-		if (status != BT_ADDR_LEN) {
-			return status ? status : 1;
-		}
-	}
-
-	return 0;
-}
-
 int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	static uint8_t send[10] = { 0x04, 0x05, 0x01, BT_ADDR_LEN };
 	static const uint8_t expected[] = { 0x04, 0x05, 0x03 };
@@ -457,6 +445,46 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	return 0;
 }
 
+int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+		enum DevicesConnected *connected) {
+	static const uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
+	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };
+
+	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	if (status) {
+		return status;
+	}
+
+	uint8_t num_devices_byte;
+	status = read(sock, &num_devices_byte, 1);
+	if (status != 1) {
+		return status ? status : 1;
+	}
+
+	// num_devices_byte = (num_devices_byte - 1) / BT_ADDR_LEN;
+	// equivalent statements but more efficient
+	num_devices_byte /= BT_ADDR_LEN;
+
+	*num_devices = num_devices_byte;
+
+	uint8_t num_connected_byte;
+	status = read(sock, &num_connected_byte, 1);
+	if (status != 1) {
+		return status ? status : 1;
+	}
+	*connected = num_connected_byte;
+
+	size_t i;
+	for (i = 0; i < num_devices_byte; ++i) {
+		status = read(sock, &addresses[i].b, BT_ADDR_LEN);
+		if (status != BT_ADDR_LEN) {
+			return status ? status : 1;
+		}
+	}
+
+	return 0;
+}
+
 int connect_device(int sock, bdaddr_t address) {
 	static uint8_t send[11] = { 0x04, 0x01, 0x05, BT_ADDR_LEN + 1, 0x00 };
 	static uint8_t expected[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
@@ -479,32 +507,4 @@ int remove_device(int sock, bdaddr_t address) {
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
 	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
 	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
-}
-
-int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
-	static const uint8_t send[] = { 0x00, 0x03, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x00, 0x03, 0x03, 0x03 };
-
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
-	if (status) {
-		return status;
-	}
-
-	uint16_t device_id_halfword;
-	status = read(sock, &device_id_halfword, sizeof(device_id_halfword));
-	if (status != sizeof(device_id_halfword)) {
-		return status ? status : 1;
-	}
-	// reverse endianness
-	device_id_halfword = (device_id_halfword >> 8) | (device_id_halfword << 8);
-	*device_id = device_id_halfword;
-
-	uint8_t index_byte;
-	status = read(sock, &index_byte, 1);
-	if (status != 1) {
-		return status ? status : 1;
-	}
-	*index = index_byte;
-
-	return 0;
 }
