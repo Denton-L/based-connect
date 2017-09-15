@@ -28,7 +28,15 @@ Options:
 
 	-l <language>, --prompt-language=<language>
 		Change the voice-prompt language.
-		language: off, en, fr, it, de, es, pt, zh, ko, nl, ja, sv
+		language: en, fr, it, de, es, pt, zh, ko, nl, ja, sv
+
+	-v <switch>, --voice-prompts=<switch>
+		Change whether voice-prompts are on or off.
+		switch: on, off
+
+	-d, --device-status
+		Print the device status information. This includes its name, language,
+		voice-prompts, auto-off and noise cancelling settings.
 
 	-p <status>, --pairing=<status>
 		Change whether the device is pairing.
@@ -43,7 +51,7 @@ Options:
 	-b, --battery-level
 		Print the battery level of the device as a percent.
 
-	-d, --paired-devices
+	-a, --paired-devices
 		Print the devices currently connected to the device.
 		!: indicates the current device
 		*: indicates other connected devices

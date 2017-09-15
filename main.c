@@ -27,54 +27,10 @@ static int do_set_name(int sock, const char *arg) {
 	return status;
 }
 
-static int do_set_noise_cancelling(int sock, const char *arg) {
-	enum NoiseCancelling nc;
-
-	if (strcmp(arg, "high") == 0) {
-		nc = NC_HIGH;
-	} else if (strcmp(arg, "low") == 0) {
-		nc = NC_LOW;
-	} else if (strcmp(arg, "off") == 0) {
-		nc = NC_OFF;
-	} else {
-		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
-		return 1;
-	}
-
-	return set_noise_cancelling(sock, nc);
-}
-
-static int do_set_auto_off(int sock, const char *arg) {
-	enum AutoOff ao;
-
-	int parsed = atoi(arg);
-
-	switch (parsed) {
-		case AO_5_MIN:
-		case AO_20_MIN:
-		case AO_40_MIN:
-		case AO_60_MIN:
-		case AO_180_MIN:
-			ao = parsed;
-			break;
-		default:
-			if (strcmp(arg, "never") == 0) {
-				ao = AO_NEVER;
-			} else {
-				fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
-				return 1;
-			}
-	}
-
-	return set_auto_off(sock, ao);
-}
-
 static int do_set_prompt_language(int sock, const char *arg) {
 	enum PromptLanguage pl;
 
-	if (strcmp(arg, "off") == 0) {
-		pl = PL_OFF;
-	} else if (strcmp(arg, "en") == 0) {
+	if (strcmp(arg, "en") == 0) {
 		pl = PL_EN;
 	} else if (strcmp(arg, "fr") == 0) {
 		pl = PL_FR;
@@ -104,6 +60,157 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
+static int do_set_voice_prompts(int sock, const char *arg) {
+	int on;
+
+	if (strcmp(arg, "on") == 0) {
+		on = 1;
+	} else if (strcmp(arg, "off") == 0) {
+		on = 0;
+	} else {
+		fprintf(stderr, "Invalid voice prompt argument: %s\n", arg);
+		return 1;
+	}
+
+	return set_voice_prompts(sock, on);
+}
+
+static int do_set_auto_off(int sock, const char *arg) {
+	enum AutoOff ao;
+
+	int parsed = atoi(arg);
+
+	switch (parsed) {
+		case AO_5_MIN:
+		case AO_20_MIN:
+		case AO_40_MIN:
+		case AO_60_MIN:
+		case AO_180_MIN:
+			ao = parsed;
+			break;
+		default:
+			if (strcmp(arg, "never") == 0) {
+				ao = AO_NEVER;
+			} else {
+				fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+				return 1;
+			}
+	}
+
+	return set_auto_off(sock, ao);
+}
+
+static int do_set_noise_cancelling(int sock, const char *arg) {
+	enum NoiseCancelling nc;
+
+	if (strcmp(arg, "high") == 0) {
+		nc = NC_HIGH;
+	} else if (strcmp(arg, "low") == 0) {
+		nc = NC_LOW;
+	} else if (strcmp(arg, "off") == 0) {
+		nc = NC_OFF;
+	} else {
+		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+		return 1;
+	}
+
+	unsigned int device_id;
+	unsigned int index;
+	int status = get_device_id(sock, &device_id, &index);
+	if (status) {
+		return status;
+	}
+
+	if (!has_noise_cancelling(device_id)) {
+		fprintf(stderr, "This device does not have noise cancelling.");
+		return 1;
+	}
+
+	return set_noise_cancelling(sock, nc);
+}
+
+static int do_get_device_status(int sock) {
+	char name[MAX_NAME_LEN + 1];
+	enum PromptLanguage pl;
+	enum AutoOff ao;
+	enum NoiseCancelling nc;
+
+	int status = get_device_status(sock, name, &pl, &ao, &nc);
+	if (status) {
+		return status;
+	}
+
+	char *print;
+	printf("Name: %s\n", name);
+
+	switch (pl | VP_MASK) {
+		case PL_EN:
+			print = "en";
+			break;
+		case PL_FR:
+			print = "fr";
+			break;
+		case PL_IT:
+			print = "it";
+			break;
+		case PL_DE:
+			print = "de";
+			break;
+		case PL_ES:
+			print = "es";
+			break;
+		case PL_PT:
+			print = "pt";
+			break;
+		case PL_ZH:
+			print = "zh";
+			break;
+		case PL_KO:
+			print = "ko";
+			break;
+		case PL_NL:
+			print = "nl";
+			break;
+		case PL_JA:
+			print = "ja";
+			break;
+		case PL_SV:
+			print = "sv";
+			break;
+		default:
+			return 1;
+	}
+	printf("Language: %s\n", print);
+	printf("Voice Prompts: %s\n", pl & VP_MASK ? "on" : "off");
+
+	printf("Auto-Off: ");
+	if (ao) {
+		printf("%d", ao);
+	} else {
+		printf("never");
+	}
+	printf("\n");
+
+	if (nc != NC_DNE) {
+		switch (nc) {
+			case NC_HIGH:
+				print = "high";
+				break;
+			case NC_LOW:
+				print = "low";
+				break;
+			case NC_OFF:
+				print = "off";
+				break;
+			default:
+				return 1;
+		}
+		printf("Noise Cancelling: %s\n", print);
+	}
+
+	return 0;
+}
+
 static int do_set_pairing(int sock, const char *arg) {
 	enum Pairing p;
 
@@ -120,7 +227,7 @@ static int do_set_pairing(int sock, const char *arg) {
 }
 
 static int do_get_firmware_version(int sock) {
-	char version[6];
+	char version[VER_STR_LEN + 1];
 	int status = get_firmware_version(sock, version);
 
 	if (status) {
@@ -264,18 +371,20 @@ static int do_send_packet(int sock, const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
-	static const char *short_opt = "hn:c:o:l:p:fsbd";
+	static const char *short_opt = "hn:l:v:o:c:dp:fsba";
 	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
-		{ "noise-cancelling", required_argument, NULL, 'c' },
-		{ "auto-off", required_argument, NULL, 'o' },
 		{ "prompt-language", required_argument, NULL, 'l' },
+		{ "voice-prompts", required_argument, NULL, 'v' },
+		{ "auto-off", required_argument, NULL, 'o' },
+		{ "noise-cancelling", required_argument, NULL, 'c' },
+		{ "device-status", no_argument, NULL, 'd' },
 		{ "pairing", required_argument, NULL, 'p' },
 		{ "firmware-version", no_argument, NULL, 'f' },
 		{ "serial-number", no_argument, NULL, 's' },
 		{ "battery-level", no_argument, NULL, 'b' },
-		{ "paired-devices", no_argument, NULL, 'd' },
+		{ "paired-devices", no_argument, NULL, 'a' },
 		{ "connect-device", required_argument, NULL, 2 },
 		{ "disconnect-device", required_argument, NULL, 3 },
 		{ "remove-device", required_argument, NULL, 4 },
@@ -345,14 +454,20 @@ int main(int argc, char *argv[]) {
 			case 'n':
 				status = do_set_name(sock, optarg);
 				break;
-			case 'c':
-				status = do_set_noise_cancelling(sock, optarg);
+			case 'l':
+				status = do_set_prompt_language(sock, optarg);
+				break;
+			case 'v':
+				status = do_set_voice_prompts(sock, optarg);
 				break;
 			case 'o':
 				status = do_set_auto_off(sock, optarg);
 				break;
-			case 'l':
-				status = do_set_prompt_language(sock, optarg);
+			case 'c':
+				status = do_set_noise_cancelling(sock, optarg);
+				break;
+			case 'd':
+				status = do_get_device_status(sock);
 				break;
 			case 'p':
 				status = do_set_pairing(sock, optarg);
@@ -366,7 +481,7 @@ int main(int argc, char *argv[]) {
 			case 'b':
 				status = do_get_battery_level(sock);
 				break;
-			case 'd':
+			case 'a':
 				status = do_get_paired_devices(sock);
 				break;
 			case 2:
