@@ -107,3 +107,9 @@ Todo
 * Get/set volume
 * Port to MacOS (and maybe Windows)
 * Firmware updates?
+
+Firmware Details
+----------------
+
+See details.txt for partly reverse engineered but unimplemented (and unknown)
+details.
