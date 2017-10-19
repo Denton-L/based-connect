@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -34,7 +34,7 @@ static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const v
 	return 0;
 }
 
-static int read_check(int sock, void *recieve, size_t recieve_n, const void *expected,
+static int read_check(int sock, void *recieve, size_t recieve_n, const void *ack,
 		const void *mask) {
 	int status = read(sock, recieve, recieve_n);
 	if (status != recieve_n) {
@@ -42,19 +42,19 @@ static int read_check(int sock, void *recieve, size_t recieve_n, const void *exp
 	}
 
 	return abs(mask
-			? masked_memcmp(expected, recieve, recieve_n, mask)
-			: memcmp(expected, recieve, recieve_n));
+			? masked_memcmp(ack, recieve, recieve_n, mask)
+			: memcmp(ack, recieve, recieve_n));
 }
 
 static int write_check(int sock, const void *send, size_t send_n,
-		const void *expected, size_t expected_n) {
-	uint8_t buffer[expected_n];
+		const void *ack, size_t ack_n) {
+	uint8_t buffer[ack_n];
 
 	int status = write(sock, send, send_n);
 	if (status != send_n) {
 		return status ? status : 1;
 	}
-	return read_check(sock, buffer, sizeof(buffer), expected, NULL);
+	return read_check(sock, buffer, sizeof(buffer), ack, NULL);
 }
 
 int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]) {
@@ -68,9 +68,9 @@ int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_
 
 int init_connection(int sock) {
 	static const uint8_t send[] = { 0x00, 0x01, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x00, 0x01, 0x03, 0x05 };
+	static const uint8_t ack[] = { 0x00, 0x01, 0x03, 0x05 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -88,9 +88,9 @@ int init_connection(int sock) {
 
 int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 	static const uint8_t send[] = { 0x00, 0x03, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x00, 0x03, 0x03, 0x03 };
+	static const uint8_t ack[] = { 0x00, 0x03, 0x03, 0x03 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -115,11 +115,11 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 }
 
 static int get_name(int sock, char name[MAX_NAME_LEN + 1]) {
-	static const uint8_t expected[] = { 0x01, 0x02, 0x03, ANY, 0x00 };
+	static const uint8_t ack[] = { 0x01, 0x02, 0x03, ANY, 0x00 };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0x00, 0xff };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t buffer[sizeof(ack)];
 
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	int status = read_check(sock, buffer, sizeof(buffer), ack, mask);
 	if (status) {
 		return status;
 	}
@@ -159,11 +159,11 @@ int set_name(int sock, const char *name) {
 static int get_prompt_language(int sock, enum PromptLanguage *language) {
 	// TODO: ensure that this value is correct
 	// TODO: figure out what bytes 6 and 7 are for
-	static const uint8_t expected[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, ANY, ANY, 0xde };
+	static const uint8_t ack[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, ANY, ANY, 0xde };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t buffer[sizeof(ack)];
 
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	int status = read_check(sock, buffer, sizeof(buffer), ack, mask);
 	if (status) {
 		return status;
 	}
@@ -211,11 +211,11 @@ int set_voice_prompts(int sock, int on) {
 }
 
 static int get_auto_off(int sock, enum AutoOff *minutes) {
-	static const uint8_t expected[] = { 0x01, 0x04, 0x03, 0x01, ANY };
+	static const uint8_t ack[] = { 0x01, 0x04, 0x03, 0x01, ANY };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t buffer[sizeof(ack)];
 
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	int status = read_check(sock, buffer, sizeof(buffer), ack, mask);
 	if (status) {
 		return status;
 	}
@@ -243,11 +243,11 @@ int set_auto_off(int sock, enum AutoOff minutes) {
 }
 
 static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
-	static const uint8_t expected[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
+	static const uint8_t ack[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff };
-	uint8_t buffer[sizeof(expected)];
+	uint8_t buffer[sizeof(ack)];
 
-	int status = read_check(sock, buffer, sizeof(buffer), expected, mask);
+	int status = read_check(sock, buffer, sizeof(buffer), ack, mask);
 	if (status) {
 		return status;
 	}
@@ -289,10 +289,10 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 		return status ? status : 1;
 	}
 
-	static const uint8_t expected1[] = { 0x01, 0x01, 0x07, 0x00 };
-	uint8_t buffer1[sizeof(expected1)];
+	static const uint8_t ack1[] = { 0x01, 0x01, 0x07, 0x00 };
+	uint8_t buffer1[sizeof(ack1)];
 
-	status = read_check(sock, buffer1, sizeof(buffer1), expected1, NULL);
+	status = read_check(sock, buffer1, sizeof(buffer1), ack1, NULL);
 	if (status) {
 		return status;
 	}
@@ -321,24 +321,24 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 		*level = NC_DNE;
 	}
 
-	static const uint8_t expected2[] = { 0x01, 0x01, 0x06, 0x00 };
-	uint8_t buffer2[sizeof(expected2)];
-	return read_check(sock, buffer2, sizeof(buffer2), expected2, NULL);
+	static const uint8_t ack2[] = { 0x01, 0x01, 0x06, 0x00 };
+	uint8_t buffer2[sizeof(ack2)];
+	return read_check(sock, buffer2, sizeof(buffer2), ack2, NULL);
 }
 
 int set_pairing(int sock, enum Pairing pairing) {
 	static uint8_t send[] = { 0x04, 0x08, 0x05, 0x01, ANY };
-	static uint8_t expected[] = { 0x04, 0x08, 0x06, 0x01, ANY };
+	static uint8_t ack[] = { 0x04, 0x08, 0x06, 0x01, ANY };
 	send[4] = pairing;
-	expected[4] = pairing;
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	ack[4] = pairing;
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
 
 int get_firmware_version(int sock, char version[VER_STR_LEN + 1]) {
 	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x00, 0x05, 0x03, 0x05 };
+	static const uint8_t ack[] = { 0x00, 0x05, 0x03, 0x05 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -354,9 +354,9 @@ int get_firmware_version(int sock, char version[VER_STR_LEN + 1]) {
 
 int get_serial_number(int sock, char serial[0x100]) {
 	static const uint8_t send[] = { 0x00, 0x07, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x00, 0x07, 0x03 };
+	static const uint8_t ack[] = { 0x00, 0x07, 0x03 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -378,9 +378,9 @@ int get_serial_number(int sock, char serial[0x100]) {
 
 int get_battery_level(int sock, unsigned int *level) {
 	static const uint8_t send[] = { 0x02, 0x02, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x02, 0x02, 0x03, 0x01 };
+	static const uint8_t ack[] = { 0x02, 0x02, 0x03, 0x01 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -393,11 +393,11 @@ int get_battery_level(int sock, unsigned int *level) {
 
 int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	static uint8_t send[10] = { 0x04, 0x05, 0x01, BT_ADDR_LEN };
-	static const uint8_t expected[] = { 0x04, 0x05, 0x03 };
+	static const uint8_t ack[] = { 0x04, 0x05, 0x03 };
 
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -448,9 +448,9 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected) {
 	static const uint8_t send[] = { 0x04, 0x04, 0x01, 0x00 };
-	static const uint8_t expected[] = { 0x04, 0x04, 0x03 };
+	static const uint8_t ack[] = { 0x04, 0x04, 0x03 };
 
-	int status = write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	int status = write_check(sock, send, sizeof(send), ack, sizeof(ack));
 	if (status) {
 		return status;
 	}
@@ -487,24 +487,24 @@ int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *nu
 
 int connect_device(int sock, bdaddr_t address) {
 	static uint8_t send[11] = { 0x04, 0x01, 0x05, BT_ADDR_LEN + 1, 0x00 };
-	static uint8_t expected[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
+	static uint8_t ack[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
 	memcpy(&send[5], &address.b, BT_ADDR_LEN);
-	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	memcpy(&ack[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
 
 int disconnect_device(int sock, bdaddr_t address) {
 	static uint8_t send[10] = { 0x04, 0x02, 0x05, BT_ADDR_LEN };
-	static uint8_t expected[10] = { 0x04, 0x02, 0x07, BT_ADDR_LEN };
+	static uint8_t ack[10] = { 0x04, 0x02, 0x07, BT_ADDR_LEN };
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
-	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	memcpy(&ack[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
 
 int remove_device(int sock, bdaddr_t address) {
 	static uint8_t send[10] = { 0x04, 0x03, 0x05, BT_ADDR_LEN };
-	static uint8_t expected[10] = { 0x04, 0x03, 0x06, BT_ADDR_LEN };
+	static uint8_t ack[10] = { 0x04, 0x03, 0x06, BT_ADDR_LEN };
 	memcpy(&send[4], &address.b, BT_ADDR_LEN);
-	memcpy(&expected[4], &address.b, BT_ADDR_LEN);
-	return write_check(sock, send, sizeof(send), expected, sizeof(expected));
+	memcpy(&ack[4], &address.b, BT_ADDR_LEN);
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
