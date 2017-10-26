@@ -334,7 +334,7 @@ int set_pairing(int sock, enum Pairing pairing) {
 	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
 
-int get_firmware_version(int sock, char version[VER_STR_LEN + 1]) {
+int get_firmware_version(int sock, char version[VER_STR_LEN]) {
 	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x05, 0x03, 0x05 };
 
@@ -343,12 +343,12 @@ int get_firmware_version(int sock, char version[VER_STR_LEN + 1]) {
 		return status;
 	}
 
-	status = read(sock, version, VER_STR_LEN);
-	if (status != VER_STR_LEN) {
+	status = read(sock, version, VER_STR_LEN - 1);
+	if (status != VER_STR_LEN - 1) {
 		return status ? status : 1;
 	}
 
-	version[VER_STR_LEN] = '\0';
+	version[VER_STR_LEN - 1] = '\0';
 	return 0;
 }
 
