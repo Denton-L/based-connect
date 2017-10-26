@@ -122,7 +122,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 	}
 
 	if (!has_noise_cancelling(device_id)) {
-		fprintf(stderr, "This device does not have noise cancelling.");
+		fprintf(stderr, "This device does not have noise cancelling.\n");
 		return 1;
 	}
 
