@@ -100,9 +100,8 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 	if (status != sizeof(device_id_halfword)) {
 		return status ? status : 1;
 	}
-	// reverse endianness
-	device_id_halfword = (device_id_halfword >> 8) | (device_id_halfword << 8);
-	*device_id = device_id_halfword;
+
+	*device_id = bswap_16(device_id_halfword);
 
 	uint8_t index_byte;
 	status = read(sock, &index_byte, 1);
