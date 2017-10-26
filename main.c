@@ -9,7 +9,9 @@
 #include "bluetooth.h"
 #include "util.h"
 
-static void usage(const char *program) {
+static const char* progname;
+
+static void usage() {
 	printf("Usage: %s [options] <address>\n"
 		"	-h, --help\n"
 		"		Print the help message.\n"
@@ -51,7 +53,7 @@ static void usage(const char *program) {
 		"		Remove the device at address from the pairing list.\n"
 		"	--device-id\n"
 		"		Print the device id followed by the index revision.\n"
-		, program);
+		, progname);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -448,16 +450,18 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	progname = argv[0];
+
 	// Find connection address and verify options
 	int opt;
 	int opt_index = 0;
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
 		switch (opt) {
 			case 'h':
-				usage(argv[0]);
+				usage();
 				return 0;
 			case '?':
-				usage(argv[0]);
+				usage();
 				return 1;
 			default:
 				break;
@@ -468,7 +472,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, argc <= optind
 				? "An address argument must be given.\n"
 				: "Only one address argument may be given.\n");
-		usage(argv[0]);
+		usage();
 		return 1;
 	}
 
