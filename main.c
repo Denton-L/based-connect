@@ -97,6 +97,7 @@ static int do_set_prompt_language(int sock, const char *arg) {
 		pl = PL_SV;
 	} else {
 		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -112,6 +113,7 @@ static int do_set_voice_prompts(int sock, const char *arg) {
 		on = 0;
 	} else {
 		fprintf(stderr, "Invalid voice prompt argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -136,6 +138,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 				ao = AO_NEVER;
 			} else {
 				fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+				usage();
 				return 1;
 			}
 	}
@@ -154,6 +157,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 		nc = NC_OFF;
 	} else {
 		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -166,6 +170,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 
 	if (!has_noise_cancelling(device_id)) {
 		fprintf(stderr, "This device does not have noise cancelling.\n");
+		usage();
 		return 1;
 	}
 
@@ -263,6 +268,7 @@ static int do_set_pairing(int sock, const char *arg) {
 		p = P_OFF;
 	} else {
 		fprintf(stderr, "Invalid pairing argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
