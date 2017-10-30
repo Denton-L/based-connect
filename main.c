@@ -9,8 +9,51 @@
 #include "bluetooth.h"
 #include "util.h"
 
-static void usage(const char *program) {
-	printf("Usage: %s [options] <address>\n", program);
+static const char *program_name;
+
+static void usage() {
+	printf("Usage: %s [options] <address>\n"
+		"\t-h, --help\n"
+		"\t\tPrint the help message.\n"
+		"\t-n <name>, --name=<name>\n"
+		"\t\tChange the name of the device.\n"
+		"\t-c <level>, --noise-cancelling=<level>\n"
+		"\t\tChange the noise cancelling level.\n"
+		"\t\tlevel: high, low, off\n"
+		"\t-o <minutes>, --auto-off=<minutes>\n"
+		"\t\tChange the auto-off time.\n"
+		"\t\tminutes: never, 5, 20, 40, 60, 180\n"
+		"\t-l <language>, --prompt-language=<language>\n"
+		"\t\tChange the voice-prompt language.\n"
+		"\t\tlanguage: en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
+		"\t-v <switch>, --voice-prompts=<switch>\n"
+		"\t\tChange whether voice-prompts are on or off.\n"
+		"\t\tswitch: on, off\n"
+		"\t-d, --device-status\n"
+		"\t\tPrint the device status information. This includes its name, language,\n"
+		"\t\tvoice-prompts, auto-off and noise cancelling settings.\n"
+		"\t-p <status>, --pairing=<status>\n"
+		"\t\tChange whether the device is pairing.\n"
+		"\t\tstatus: on, off\n"
+		"\t-f, --firmware-version\n"
+		"\t\tPrint the firmware version on the device.\n"
+		"\t-s, --serial-number\n"
+		"\t\tPrint the serial number of the device.\n"
+		"\t-b, --battery-level\n"
+		"\t\tPrint the battery level of the device as a percent.\n"
+		"\t-a, --paired-devices\n"
+		"\t\tPrint the devices currently connected to the device.\n"
+		"\t\t!: indicates the current device\n"
+		"\t\t*: indicates other connected devices\n"
+		"\t--connect-device=<address>\n"
+		"\t\tAttempt to connect to the device at address.\n"
+		"\t--disconnect-device=<address>\n"
+		"\t\tDisconnect the device at address.\n"
+		"\t--remove-device=<address>\n"
+		"\t\tRemove the device at address from the pairing list.\n"
+		"\t--device-id\n"
+		"\t\tPrint the device id followed by the index revision.\n"
+		, program_name);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -54,6 +97,7 @@ static int do_set_prompt_language(int sock, const char *arg) {
 		pl = PL_SV;
 	} else {
 		fprintf(stderr, "Invalid prompt language argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -69,6 +113,7 @@ static int do_set_voice_prompts(int sock, const char *arg) {
 		on = 0;
 	} else {
 		fprintf(stderr, "Invalid voice prompt argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -93,6 +138,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 				ao = AO_NEVER;
 			} else {
 				fprintf(stderr, "Invalid auto-off argument: %s\n", arg);
+				usage();
 				return 1;
 			}
 	}
@@ -111,6 +157,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 		nc = NC_OFF;
 	} else {
 		fprintf(stderr, "Invalid noise cancelling argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -123,6 +170,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 
 	if (!has_noise_cancelling(device_id)) {
 		fprintf(stderr, "This device does not have noise cancelling.\n");
+		usage();
 		return 1;
 	}
 
@@ -220,6 +268,7 @@ static int do_set_pairing(int sock, const char *arg) {
 		p = P_OFF;
 	} else {
 		fprintf(stderr, "Invalid pairing argument: %s\n", arg);
+		usage();
 		return 1;
 	}
 
@@ -407,16 +456,18 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	program_name = argv[0];
+
 	// Find connection address and verify options
 	int opt;
 	int opt_index = 0;
 	while ((opt = getopt_long(argc, argv, short_opt, long_opt, &opt_index)) > 0) {
 		switch (opt) {
 			case 'h':
-				usage(argv[0]);
+				usage();
 				return 0;
 			case '?':
-				usage(argv[0]);
+				usage();
 				return 1;
 			default:
 				break;
@@ -427,7 +478,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, argc <= optind
 				? "An address argument must be given.\n"
 				: "Only one address argument may be given.\n");
-		usage(argv[0]);
+		usage();
 		return 1;
 	}
 
