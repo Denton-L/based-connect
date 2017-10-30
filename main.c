@@ -9,51 +9,51 @@
 #include "bluetooth.h"
 #include "util.h"
 
-static const char* progname;
+static const char *program_name;
 
 static void usage() {
 	printf("Usage: %s [options] <address>\n"
-		"	-h, --help\n"
-		"		Print the help message.\n"
-		"	-n <name>, --name=<name>\n"
-		"		Change the name of the device.\n"
-		"	-c <level>, --noise-cancelling=<level>\n"
-		"		Change the noise cancelling level.\n"
-		"		level: high, low, off\n"
-		"	-o <minutes>, --auto-off=<minutes>\n"
-		"		Change the auto-off time.\n"
-		"		minutes: never, 5, 20, 40, 60, 180\n"
-		"	-l <language>, --prompt-language=<language>\n"
-		"		Change the voice-prompt language.\n"
-		"		language: en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
-		"	-v <switch>, --voice-prompts=<switch>\n"
-		"		Change whether voice-prompts are on or off.\n"
-		"		switch: on, off\n"
-		"	-d, --device-status\n"
-		"		Print the device status information. This includes its name, language,\n"
-		"		voice-prompts, auto-off and noise cancelling settings.\n"
-		"	-p <status>, --pairing=<status>\n"
-		"		Change whether the device is pairing.\n"
-		"		status: on, off\n"
-		"	-f, --firmware-version\n"
-		"		Print the firmware version on the device.\n"
-		"	-s, --serial-number\n"
-		"		Print the serial number of the device.\n"
-		"	-b, --battery-level\n"
-		"		Print the battery level of the device as a percent.\n"
-		"	-a, --paired-devices\n"
-		"		Print the devices currently connected to the device.\n"
-		"		!: indicates the current device\n"
-		"		*: indicates other connected devices\n"
-		"	--connect-device=<address>\n"
-		"		Attempt to connect to the device at address.\n"
-		"	--disconnect-device=<address>\n"
-		"		Disconnect the device at address.\n"
-		"	--remove-device=<address>\n"
-		"		Remove the device at address from the pairing list.\n"
-		"	--device-id\n"
-		"		Print the device id followed by the index revision.\n"
-		, progname);
+		"\t-h, --help\n"
+		"\t\tPrint the help message.\n"
+		"\t-n <name>, --name=<name>\n"
+		"\t\tChange the name of the device.\n"
+		"\t-c <level>, --noise-cancelling=<level>\n"
+		"\t\tChange the noise cancelling level.\n"
+		"\t\tlevel: high, low, off\n"
+		"\t-o <minutes>, --auto-off=<minutes>\n"
+		"\t\tChange the auto-off time.\n"
+		"\t\tminutes: never, 5, 20, 40, 60, 180\n"
+		"\t-l <language>, --prompt-language=<language>\n"
+		"\t\tChange the voice-prompt language.\n"
+		"\t\tlanguage: en, fr, it, de, es, pt, zh, ko, nl, ja, sv\n"
+		"\t-v <switch>, --voice-prompts=<switch>\n"
+		"\t\tChange whether voice-prompts are on or off.\n"
+		"\t\tswitch: on, off\n"
+		"\t-d, --device-status\n"
+		"\t\tPrint the device status information. This includes its name, language,\n"
+		"\t\tvoice-prompts, auto-off and noise cancelling settings.\n"
+		"\t-p <status>, --pairing=<status>\n"
+		"\t\tChange whether the device is pairing.\n"
+		"\t\tstatus: on, off\n"
+		"\t-f, --firmware-version\n"
+		"\t\tPrint the firmware version on the device.\n"
+		"\t-s, --serial-number\n"
+		"\t\tPrint the serial number of the device.\n"
+		"\t-b, --battery-level\n"
+		"\t\tPrint the battery level of the device as a percent.\n"
+		"\t-a, --paired-devices\n"
+		"\t\tPrint the devices currently connected to the device.\n"
+		"\t\t!: indicates the current device\n"
+		"\t\t*: indicates other connected devices\n"
+		"\t--connect-device=<address>\n"
+		"\t\tAttempt to connect to the device at address.\n"
+		"\t--disconnect-device=<address>\n"
+		"\t\tDisconnect the device at address.\n"
+		"\t--remove-device=<address>\n"
+		"\t\tRemove the device at address from the pairing list.\n"
+		"\t--device-id\n"
+		"\t\tPrint the device id followed by the index revision.\n"
+		, program_name);
 }
 
 static int do_set_name(int sock, const char *arg) {
@@ -456,7 +456,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	progname = argv[0];
+	program_name = argv[0];
 
 	// Find connection address and verify options
 	int opt;
