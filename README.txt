@@ -96,7 +96,7 @@ Disclaimer
 
 This has only been tested on Bose QuietComfort 35's with firmware 1.3.2, 1.2.9,
 1.06 and SoundLink II's with firmware 2.1.1. I cannot ensure that this program
-works on any other devies.
+works on any other devices.
 
 Todo
 ----
