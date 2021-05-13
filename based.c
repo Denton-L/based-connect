@@ -331,6 +331,16 @@ int set_pairing(int sock, enum Pairing pairing) {
 	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
 
+int set_self_voice(int sock, enum SelfVoice selfvoice) {
+	static uint8_t send[] = { 0x01, 0x0b, 0x02, 0x02, 0x01, ANY, 0x38 };
+	static uint8_t ack[] = { 0x01, 0x0b, 0x03, 0x03, 0x01, ANY, 0x0f};
+
+	send[5] = selfvoice;
+	ack[5] = selfvoice;
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
+}
+
+
 int get_firmware_version(int sock, char version[VER_STR_LEN]) {
 	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x05, 0x03, 0x05 };

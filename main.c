@@ -53,6 +53,9 @@ static void usage() {
 		"\t\tRemove the device at address from the pairing list.\n"
 		"\t--device-id\n"
 		"\t\tPrint the device id followed by the index revision.\n"
+		"\t-e, --self-voice\n"
+		"\t\tChange the self voice level.\n"
+		"\t\tlevel: high, medium, low, off\n"
 		, program_name);
 }
 
@@ -286,6 +289,26 @@ static int do_set_pairing(int sock, const char *arg) {
 	return set_pairing(sock, p);
 }
 
+static int do_set_self_voice(int sock, const char *arg) {
+	enum SelfVoice p;
+
+	if (strcmp(arg, "high") == 0) {
+		p = SV_HIGH;
+	} else if (strcmp(arg, "medium") == 0) {
+		p = SV_MEDIUM;
+	} else if (strcmp(arg, "low") == 0) {
+		p = SV_LOW;
+	} else if (strcmp(arg, "off") == 0) {
+		p = SV_OFF;
+	} else {
+		fprintf(stderr, "Invalid self voice argument: %s\n", arg);
+		usage();
+		return 1;
+	}
+
+	return set_self_voice(sock, p);
+}
+
 static int do_get_firmware_version(int sock) {
 	char version[VER_STR_LEN];
 	int status = get_firmware_version(sock, version);
@@ -431,7 +454,7 @@ static int do_send_packet(int sock, const char *arg) {
 }
 
 int main(int argc, char *argv[]) {
-	static const char *short_opt = "hn:l:v:o:c:dp:fsba";
+	static const char *short_opt = "hn:l:v:o:c:e:dp:fsba";
 	static const struct option long_opt[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "name", required_argument, NULL, 'n' },
@@ -449,6 +472,7 @@ int main(int argc, char *argv[]) {
 		{ "disconnect-device", required_argument, NULL, 3 },
 		{ "remove-device", required_argument, NULL, 4 },
 		{ "device-id", no_argument, NULL, 5 },
+		{ "self-voice", required_argument, NULL, 'e' },
 		{ "send-packet", required_argument, NULL, 1 },
 		{ 0, 0, 0, 0 }
 	};
@@ -545,6 +569,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 'a':
 				status = do_get_paired_devices(sock);
+				break;
+			case 'e':
+				status = do_set_self_voice(sock, optarg);
 				break;
 			case 2:
 				status = do_connect_device(sock, optarg);

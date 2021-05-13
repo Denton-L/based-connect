@@ -63,6 +63,13 @@ enum DevicesConnected {
 	DC_TWO = 0x03
 };
 
+enum SelfVoice {
+	SV_OFF = 0x0,
+	SV_HIGH = 0x1,
+	SV_MEDIUM = 0x2,
+	SV_LOW = 0x3,
+};
+
 struct Device {
 	bdaddr_t address;
 	enum DeviceStatus status;
@@ -81,6 +88,7 @@ int set_noise_cancelling(int sock, enum NoiseCancelling level);
 int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level);
 int set_pairing(int sock, enum Pairing pairing);
+int set_self_voice(int sock, enum SelfVoice selfVoice);
 int get_firmware_version(int sock, char version[VER_STR_LEN]);
 int get_serial_number(int sock, char serial[0x100]);
 int get_battery_level(int sock, unsigned int *level);
