@@ -11,7 +11,7 @@
 #define MAX_NUM_DEVICES 8
 #define MAX_BT_PACK_LEN 0x1000
 #define VER_STR_LEN 6
-#define VP_MASK 0x20
+#define VP_MASK 0x7F
 
 enum NoiseCancelling {
 	NC_HIGH = 0x01,
@@ -38,9 +38,13 @@ enum PromptLanguage {
 	PL_PT = 0x27,
 	PL_ZH = 0x28,
 	PL_KO = 0x29,
+	PL_PL = 0x2B,
+	PL_RU = 0x2A,
 	PL_NL = 0x2e,
 	PL_JA = 0x2f,
 	PL_SV = 0x32
+	
+
 };
 
 enum Pairing {

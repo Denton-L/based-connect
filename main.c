@@ -89,7 +89,11 @@ static int do_set_prompt_language(int sock, const char *arg) {
 		pl = PL_ZH;
 	} else if (strcmp(arg, "ko") == 0) {
 		pl = PL_KO;
-	} else if (strcmp(arg, "nl") == 0) {
+	} else if (strcmp(arg, "pl") == 0) {
+		pl = PL_PL;
+	} else if (strcmp(arg, "ru") == 0) {
+		pl = PL_RU;
+	}  else if (strcmp(arg, "nl") == 0) {
 		pl = PL_NL;
 	} else if (strcmp(arg, "ja") == 0) {
 		pl = PL_JA;
@@ -191,7 +195,7 @@ static int do_get_device_status(int sock) {
 	char *print;
 	printf("Name: %s\n", name);
 
-	switch (pl | VP_MASK) {
+	switch (pl & VP_MASK) {
 		case PL_EN:
 			print = "en";
 			break;
@@ -225,8 +229,15 @@ static int do_get_device_status(int sock) {
 		case PL_SV:
 			print = "sv";
 			break;
+		case PL_RU:
+			print = "ru";
+			break;
+		case PL_PL:
+			print = "pl";
+			break;
 		default:
-			return 1;
+			print = "unknown";
+			break;
 	}
 	printf("Language: %s\n", print);
 	printf("Voice Prompts: %s\n", pl & VP_MASK ? "on" : "off");
