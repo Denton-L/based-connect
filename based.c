@@ -320,9 +320,7 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 		*level = NC_DNE;
 	}
 
-	static const uint8_t ack2[] = { 0x01, 0x01, 0x06, 0x00 };
-	uint8_t buffer2[sizeof(ack2)];
-	return read_check(sock, buffer2, sizeof(buffer2), ack2, NULL);
+	return status;
 }
 
 int set_pairing(int sock, enum Pairing pairing) {
