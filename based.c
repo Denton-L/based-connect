@@ -320,9 +320,7 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 		*level = NC_DNE;
 	}
 
-	static const uint8_t ack2[] = { 0x01, 0x01, 0x06, 0x00 };
-	uint8_t buffer2[sizeof(ack2)];
-	return read_check(sock, buffer2, sizeof(buffer2), ack2, NULL);
+	return status;
 }
 
 int set_pairing(int sock, enum Pairing pairing) {
@@ -332,6 +330,16 @@ int set_pairing(int sock, enum Pairing pairing) {
 	ack[4] = pairing;
 	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
 }
+
+int set_self_voice(int sock, enum SelfVoice selfvoice) {
+	static uint8_t send[] = { 0x01, 0x0b, 0x02, 0x02, 0x01, ANY, 0x38 };
+	static uint8_t ack[] = { 0x01, 0x0b, 0x03, 0x03, 0x01, ANY, 0x0f};
+
+	send[5] = selfvoice;
+	ack[5] = selfvoice;
+	return write_check(sock, send, sizeof(send), ack, sizeof(ack));
+}
+
 
 int get_firmware_version(int sock, char version[VER_STR_LEN]) {
 	static const uint8_t send[] = { 0x00, 0x05, 0x01, 0x00 };
