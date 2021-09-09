@@ -485,7 +485,10 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_rc address;
 	address.rc_family = AF_BLUETOOTH;
 	address.rc_channel = BOSE_CHANNEL;
-	str2ba(argv[optind], &address.rc_bdaddr);
+	if (str2ba(argv[optind], &address.rc_bdaddr) != 0) {
+		fprintf(stderr, "Invalid bluetooth address: %s\n", argv[optind]);
+		return 1;
+	}
 
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
