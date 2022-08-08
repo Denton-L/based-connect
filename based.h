@@ -1,7 +1,13 @@
 #ifndef BASED_H
 #define BASED_H
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <stdint.h>
+#else
 #include <bluetooth/bluetooth.h>
+#endif
+
 #include <stddef.h>
 
 #include "bluetooth.h"

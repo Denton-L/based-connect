@@ -71,8 +71,22 @@ Options:
 Building
 --------
 
-Simply run `make -j` to build the program. The executable produced will be
-called `based-connect`.
+Create a build directory (e.g., `mkdir build`) and enter it. Run
+```sh
+cmake ..
+```
+to create a Makefile, and then run
+```sh
+cmake --build .
+```
+to build the project.
+
+On Windows, you'll need `vcpkg` with the `getopt` package installed. Run
+```powershell
+cmake -T ClangCL -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" ..
+```
+to create the build files (You'll need Visual Studio 2019 with the clang build
+tools installed).
 
 Installing
 ----------

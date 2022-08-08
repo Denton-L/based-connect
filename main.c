@@ -1,13 +1,27 @@
+#ifdef _WIN32
+#include <winsock2.h>
+#else
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
+#endif
+
 #include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
+#include <stdio.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "based.h"
 #include "bluetooth.h"
 #include "util.h"
+
+#ifdef _WIN32
+#define AF_BLUETOOTH AF_BTH
+#define BTPROTO_RFCOMM BTHPROTO_RFCOMM
+#endif
 
 static const char *program_name;
 
@@ -442,19 +456,33 @@ int main(int argc, char *argv[]) {
 		{ 0, 0, 0, 0 }
 	};
 
-	static const struct timeval send_timeout = { 5, 0 };
-	static const struct timeval recieve_timeout = { 1, 0 };
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
+#ifdef _WIN32
+//	static const uint32_t send_timeout = 5000;
+//	if (setsockopt(sock, SOL_RFCOMM, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
+//		perror("Could not set socket send timeout");
+//		return 1;
+//	}
+//
+//	static const uint32_t receive_timeout = 1000;
+//	if (setsockopt(sock, SOL_RFCOMM, SO_RCVTIMEO, &receive_timeout, sizeof(receive_timeout)) < 0) {
+//		perror("Could not set socket recieve timeout");
+//		return 1;
+//	}
+#else
+	static const struct timeval send_timeout = { 5, 0 };
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
 		perror("Could not set socket send timeout");
 		return 1;
 	}
 
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &recieve_timeout, sizeof(recieve_timeout)) < 0) {
+	static const struct timeval receive_timeout = { 1, 0 };
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &recieve_timeout, sizeof(receive_timeout)) < 0) {
 		perror("Could not set socket recieve timeout");
 		return 1;
 	}
+#endif
 
 	program_name = argv[0];
 
@@ -481,7 +509,15 @@ int main(int argc, char *argv[]) {
 		usage();
 		return 1;
 	}
-
+#ifdef _WIN32
+	SOCKADDR_BTH address;
+	address.addressFamily = AF_BTH;
+	address.port = BOSE_CHANNEL;
+	if (str2ba(argv[optind], &address.btAddr) != 0) {
+		fprintf(stderr, "Invalid bluetooth address: %s\n", argv[optind]);
+		return 1;
+	}
+#else
 	struct sockaddr_rc address;
 	address.rc_family = AF_BLUETOOTH;
 	address.rc_channel = BOSE_CHANNEL;
@@ -489,6 +525,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Invalid bluetooth address: %s\n", argv[optind]);
 		return 1;
 	}
+#endif
 
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
 		perror("Could not connect to Bluetooth device");
