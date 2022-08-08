@@ -14,8 +14,8 @@
  * Based on code taken from the BlueZ library.
  */
 
-int reverse_ba2str(const bdaddr_t *ba, char *str) {
-	return sprintf(str, "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",
+int reverse_ba2str(const bdaddr_t *ba, char *str, size_t str_len) {
+	return sprintf_s(str, str_len, "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",
 			BDADDR_BYTES(*ba)[0], BDADDR_BYTES(*ba)[1], BDADDR_BYTES(*ba)[2], BDADDR_BYTES(*ba)[3], BDADDR_BYTES(*ba)[4], BDADDR_BYTES(*ba)[5]);
 }
 
@@ -28,7 +28,7 @@ int reverse_str2ba(const char *str, bdaddr_t *ba) {
 	}
 
 	for (i = 0; i < 6; i++, str += 3)
-		BDADDR_BYTES(*ba)[i] = strtol(str, NULL, 16);
+		BDADDR_BYTES(*ba)[i] = (uint8_t) strtol(str, NULL, 16);
 
 	return 0;
 }

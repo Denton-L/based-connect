@@ -83,10 +83,9 @@ to build the project.
 
 On Windows, you'll need `vcpkg` with the `getopt` package installed. Run
 ```powershell
-cmake -T ClangCL -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" ..
+cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" ..
 ```
-to create the build files (You'll need Visual Studio 2019 with the clang build
-tools installed).
+to create the build files.
 
 Installing
 ----------
@@ -97,6 +96,16 @@ are assignable and have the traditional meaning.
 Alternatively, if you run Arch Linux, you can download it from the AUR here:
 
 https://aur.archlinux.org/packages/based-connect-git/
+
+Running
+-------
+
+On Windows, use
+```powershell
+Get-PnpDevice -class Bluetooth | Select-Object -Property FriendlyName,
+DeviceID
+```
+to enumerate the Bluetooth device ID.
 
 Dependencies
 ------------

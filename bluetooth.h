@@ -14,7 +14,7 @@
 
 #define BT_ADDR_LEN 6
 
-int reverse_ba2str(const bdaddr_t *ba, char *str);
+int reverse_ba2str(const bdaddr_t *ba, char *str, size_t str_len);
 int reverse_str2ba(const char *str, bdaddr_t *ba);
 #ifdef _WIN32
 int bachk(const char *str);

@@ -1,6 +1,4 @@
-#ifdef _WIN32
-#include <winsock2.h>
-#else
+#ifndef _WIN32
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #endif
@@ -14,14 +12,11 @@
 #include <unistd.h>
 #endif
 
+#include "socket.h"
 #include "based.h"
 #include "bluetooth.h"
 #include "util.h"
 
-#ifdef _WIN32
-#define AF_BLUETOOTH AF_BTH
-#define BTPROTO_RFCOMM BTHPROTO_RFCOMM
-#endif
 
 static const char *program_name;
 
@@ -70,7 +65,7 @@ static void usage() {
 		, program_name);
 }
 
-static int do_set_name(int sock, const char *arg) {
+static int do_set_name(socktype_t sock, const char *arg) {
 	char name_buffer[MAX_NAME_LEN + 1] = { 0 };
 	int status;
 
@@ -78,13 +73,13 @@ static int do_set_name(int sock, const char *arg) {
 		fprintf(stderr, "Name exceeds %d character maximum. Truncating.\n", MAX_NAME_LEN);
 		status = 1;
 	} else {
-		strncpy(name_buffer, arg, MAX_NAME_LEN);
+		strncpy_s(name_buffer, MAX_NAME_LEN, arg, MAX_NAME_LEN);
 		status = set_name(sock, name_buffer);
 	}
 	return status;
 }
 
-static int do_set_prompt_language(int sock, const char *arg) {
+static int do_set_prompt_language(socktype_t sock, const char *arg) {
 	enum PromptLanguage pl;
 
 	if (strcmp(arg, "en") == 0) {
@@ -118,7 +113,7 @@ static int do_set_prompt_language(int sock, const char *arg) {
 	return set_prompt_language(sock, pl);
 }
 
-static int do_set_voice_prompts(int sock, const char *arg) {
+static int do_set_voice_prompts(socktype_t sock, const char *arg) {
 	int on;
 
 	if (strcmp(arg, "on") == 0) {
@@ -134,7 +129,7 @@ static int do_set_voice_prompts(int sock, const char *arg) {
 	return set_voice_prompts(sock, on);
 }
 
-static int do_set_auto_off(int sock, const char *arg) {
+static int do_set_auto_off(socktype_t sock, const char *arg) {
 	enum AutoOff ao;
 
 	int parsed = atoi(arg);
@@ -160,7 +155,7 @@ static int do_set_auto_off(int sock, const char *arg) {
 	return set_auto_off(sock, ao);
 }
 
-static int do_set_noise_cancelling(int sock, const char *arg) {
+static int do_set_noise_cancelling(socktype_t sock, const char *arg) {
 	enum NoiseCancelling nc;
 
 	if (strcmp(arg, "high") == 0) {
@@ -191,7 +186,7 @@ static int do_set_noise_cancelling(int sock, const char *arg) {
 	return set_noise_cancelling(sock, nc);
 }
 
-static int do_get_device_status(int sock) {
+static int do_get_device_status(socktype_t sock) {
 	char name[MAX_NAME_LEN + 1];
 	enum PromptLanguage pl;
 	enum AutoOff ao;
@@ -273,7 +268,7 @@ static int do_get_device_status(int sock) {
 	return 0;
 }
 
-static int do_set_pairing(int sock, const char *arg) {
+static int do_set_pairing(socktype_t sock, const char *arg) {
 	enum Pairing p;
 
 	if (strcmp(arg, "on") == 0) {
@@ -289,7 +284,7 @@ static int do_set_pairing(int sock, const char *arg) {
 	return set_pairing(sock, p);
 }
 
-static int do_get_firmware_version(int sock) {
+static int do_get_firmware_version(socktype_t sock) {
 	char version[VER_STR_LEN];
 	int status = get_firmware_version(sock, version);
 
@@ -301,7 +296,7 @@ static int do_get_firmware_version(int sock) {
 	return 0;
 }
 
-static int do_get_serial_number(int sock) {
+static int do_get_serial_number(socktype_t sock) {
 	char serial[0x100];
 	int status = get_serial_number(sock, serial);
 
@@ -313,7 +308,7 @@ static int do_get_serial_number(int sock) {
 	return 0;
 }
 
-static int do_get_battery_level(int sock) {
+static int do_get_battery_level(socktype_t sock) {
 	unsigned int level;
 	int status = get_battery_level(sock, &level);
 
@@ -325,7 +320,7 @@ static int do_get_battery_level(int sock) {
 	return 0;
 }
 
-static int do_get_paired_devices(int sock) {
+static int do_get_paired_devices(socktype_t sock) {
 	bdaddr_t devices[MAX_NUM_DEVICES];
 	size_t num_devices;
 	enum DevicesConnected connected;
@@ -357,7 +352,7 @@ static int do_get_paired_devices(int sock) {
 		}
 
 		char address[18];
-		reverse_ba2str(&device.address, address);
+		reverse_ba2str(&device.address, address, sizeof(address));
 
 		char status_symb;
 		switch (device.status) {
@@ -380,25 +375,25 @@ static int do_get_paired_devices(int sock) {
 	return 0;
 }
 
-static int do_connect_device(int sock, const char *arg) {
+static int do_connect_device(socktype_t sock, const char *arg) {
 	bdaddr_t address;
 	reverse_str2ba(arg, &address);
 	return connect_device(sock, address);
 }
 
-static int do_disconnect_device(int sock, const char *arg) {
+static int do_disconnect_device(socktype_t sock, const char *arg) {
 	bdaddr_t address;
 	reverse_str2ba(arg, &address);
 	return disconnect_device(sock, address);
 }
 
-static int do_remove_device(int sock, const char *arg) {
+static int do_remove_device(socktype_t sock, const char *arg) {
 	bdaddr_t address;
 	reverse_str2ba(arg, &address);
 	return remove_device(sock, address);
 }
 
-static int do_get_device_id(int sock) {
+static int do_get_device_id(socktype_t sock) {
 	unsigned int device_id;
 	unsigned int index;
 	int status = get_device_id(sock, &device_id, &index);
@@ -411,7 +406,7 @@ static int do_get_device_id(int sock) {
 	return 0;
 }
 
-static int do_send_packet(int sock, const char *arg) {
+static int do_send_packet(socktype_t sock, const char *arg) {
 	uint8_t send[sizeof(arg) / 2];
 	size_t i;
 	for (i = 0; arg[i * 2]; ++i) {
@@ -455,31 +450,36 @@ int main(int argc, char *argv[]) {
 		{ "send-packet", required_argument, NULL, 1 },
 		{ 0, 0, 0, 0 }
 	};
+#ifdef _WIN32
+	WORD version_requested = MAKEWORD(2, 2);
+	WSADATA wsa_data;
+	WSAStartup(version_requested, &wsa_data);
+#endif
 
-	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	socktype_t sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 #ifdef _WIN32
-//	static const uint32_t send_timeout = 5000;
-//	if (setsockopt(sock, SOL_RFCOMM, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
-//		perror("Could not set socket send timeout");
-//		return 1;
-//	}
-//
-//	static const uint32_t receive_timeout = 1000;
-//	if (setsockopt(sock, SOL_RFCOMM, SO_RCVTIMEO, &receive_timeout, sizeof(receive_timeout)) < 0) {
-//		perror("Could not set socket recieve timeout");
-//		return 1;
-//	}
+	static const DWORD send_timeout = 5000;
+	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char *) &send_timeout, sizeof(send_timeout)) < 0) {
+		psockerror("Could not set socket send timeout");
+		return 1;
+	}
+
+	static const DWORD receive_timeout = 1000;
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char *) &receive_timeout, sizeof(receive_timeout)) < 0) {
+		psockerror("Could not set socket receive timeout");
+		return 1;
+	}
 #else
 	static const struct timeval send_timeout = { 5, 0 };
 	if (setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, &send_timeout, sizeof(send_timeout)) < 0) {
-		perror("Could not set socket send timeout");
+		psockerror("Could not set socket send timeout");
 		return 1;
 	}
 
 	static const struct timeval receive_timeout = { 1, 0 };
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &recieve_timeout, sizeof(receive_timeout)) < 0) {
-		perror("Could not set socket recieve timeout");
+		psockerror("Could not set socket recieve timeout");
 		return 1;
 	}
 #endif
@@ -510,15 +510,15 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 #ifdef _WIN32
-	SOCKADDR_BTH address;
+	SOCKADDR_BTH address = {0};
 	address.addressFamily = AF_BTH;
 	address.port = BOSE_CHANNEL;
-	if (str2ba(argv[optind], &address.btAddr) != 0) {
+	if (str2ba(argv[optind], (BLUETOOTH_ADDRESS_STRUCT *) &address.btAddr) != 0) {
 		fprintf(stderr, "Invalid bluetooth address: %s\n", argv[optind]);
 		return 1;
 	}
 #else
-	struct sockaddr_rc address;
+	struct sockaddr_rc address = {0};
 	address.rc_family = AF_BLUETOOTH;
 	address.rc_channel = BOSE_CHANNEL;
 	if (str2ba(argv[optind], &address.rc_bdaddr) != 0) {
@@ -528,7 +528,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	if (connect(sock, (struct sockaddr *) &address, sizeof(address)) != 0) {
-		perror("Could not connect to Bluetooth device");
+		psockerror("Could not connect to Bluetooth device");
 		return 1;
 	}
 
@@ -596,7 +596,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (status < 0) {
-		perror("Error trying to change setting");
+		psockerror("Error trying to change setting");
 	}
 
 	close(sock);

@@ -5,7 +5,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #define read(sock, buf, size) recv(sock, (void *) buf, (int) size, 0)
-#define write(sock, buf, size) send(sock, (char *) buf, size, 0)
+#define write(sock, buf, size) send(sock, (char *) buf, (int) size, 0)
 #define bswap_16(x) _byteswap_ushort(x)
 #else
 #include <unistd.h>
@@ -13,6 +13,7 @@
 
 #include "based.h"
 #include "bluetooth.h"
+#include "malloc.h"
 
 #define ANY 0x00
 #define CN_BASE_PACK_LEN 4
@@ -44,39 +45,39 @@ static int masked_memcmp(const void *ptr1, const void *ptr2, size_t num, const v
 	return 0;
 }
 
-static int read_check(int sock, void *recieve, size_t recieve_n, const void *ack,
+static int read_check(socktype_t sock, void *receive, size_t receive_n, const void *ack,
 		const void *mask) {
-	int status = read(sock, recieve, recieve_n);
-	if (status != recieve_n) {
+	int status = read(sock, receive, receive_n);
+	if (status != receive_n) {
 		return status ? status : 1;
 	}
 
 	return abs(mask
-			? masked_memcmp(ack, recieve, recieve_n, mask)
-			: memcmp(ack, recieve, recieve_n));
+			? masked_memcmp(ack, receive, receive_n, mask)
+			: memcmp(ack, receive, receive_n));
 }
 
-static int write_check(int sock, const void *send_b, size_t send_n,
+static int write_check(socktype_t sock, const void *send_b, size_t send_n,
 		const void *ack, size_t ack_n) {
-	uint8_t buffer[ack_n];
+	uint8_t *buffer = alloca(ack_n);
 
 	int status = write(sock, send_b, send_n);
 	if (status != send_n) {
 		return status ? status : 1;
 	}
-	return read_check(sock, buffer, sizeof(buffer), ack, NULL);
+	return read_check(sock, buffer, ack_n, ack, NULL);
 }
 
-int send_packet(int sock, const void *send_b, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]) {
+int send_packet(socktype_t sock, const void *send_b, size_t send_n, uint8_t received[MAX_BT_PACK_LEN]) {
 	int status = write(sock, send_b, send_n);
 	if (status != send_n) {
 		return status ? status : 1;
 	}
 
-	return read(sock, recieved, MAX_BT_PACK_LEN);
+	return read(sock, received, MAX_BT_PACK_LEN);
 }
 
-int init_connection(int sock) {
+int init_connection(socktype_t sock) {
 	static const uint8_t send_buf[] = { 0x00, 0x01, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x01, 0x03, 0x05 };
 
@@ -96,7 +97,7 @@ int init_connection(int sock) {
 	return 0;
 }
 
-int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
+int get_device_id(socktype_t sock, unsigned int *device_id, unsigned int *index) {
 	static const uint8_t send_buf[] = { 0x00, 0x03, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x03, 0x03, 0x03 };
 
@@ -123,7 +124,7 @@ int get_device_id(int sock, unsigned int *device_id, unsigned int *index) {
 	return 0;
 }
 
-static int get_name(int sock, char name[MAX_NAME_LEN + 1]) {
+static int get_name(socktype_t sock, char name[MAX_NAME_LEN + 1]) {
 	static const uint8_t ack[] = { 0x01, 0x02, 0x03, ANY, 0x00 };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0x00, 0xff };
 	uint8_t buffer[sizeof(ack)];
@@ -143,11 +144,11 @@ static int get_name(int sock, char name[MAX_NAME_LEN + 1]) {
 	return 0;
 }
 
-int set_name(int sock, const char *name) {
+int set_name(socktype_t sock, const char *name) {
 	static uint8_t send_buf[CN_BASE_PACK_LEN + MAX_NAME_LEN] = { 0x01, 0x02, 0x02, ANY };
 	size_t length = strlen(name);
 
-	send_buf[3] = length;
+	send_buf[3] = (uint8_t) length;
 	strncpy_s((char *) &send_buf[CN_BASE_PACK_LEN], sizeof(send_buf) - CN_BASE_PACK_LEN, name, MAX_NAME_LEN);
 
 	size_t send_size = CN_BASE_PACK_LEN + length;
@@ -165,7 +166,7 @@ int set_name(int sock, const char *name) {
 	return abs(strcmp(name, got_name));
 }
 
-static int get_prompt_language(int sock, enum PromptLanguage *language) {
+static int get_prompt_language(socktype_t sock, enum PromptLanguage *language) {
 	// TODO: ensure that this value is correct
 	// TODO: figure out what bytes 6 and 7 are for
 	static const uint8_t ack[] = { 0x01, 0x03, 0x03, 0x05, ANY, 0x00, ANY, ANY, 0xde };
@@ -181,7 +182,7 @@ static int get_prompt_language(int sock, enum PromptLanguage *language) {
 	return 0;
 }
 
-int set_prompt_language(int sock, enum PromptLanguage language) {
+int set_prompt_language(socktype_t sock, enum PromptLanguage language) {
 	static uint8_t send_buf[] = { 0x01, 0x03, 0x02, 0x01, ANY };
 	send_buf[4] = language;
 
@@ -199,7 +200,7 @@ int set_prompt_language(int sock, enum PromptLanguage language) {
 	return abs(language - got_language);
 }
 
-int set_voice_prompts(int sock, int on) {
+int set_voice_prompts(socktype_t sock, int on) {
 	char name[MAX_NAME_LEN + 1];
 	enum PromptLanguage pl;
 	enum AutoOff ao;
@@ -219,7 +220,7 @@ int set_voice_prompts(int sock, int on) {
 	return set_prompt_language(sock, pl);
 }
 
-static int get_auto_off(int sock, enum AutoOff *minutes) {
+static int get_auto_off(socktype_t sock, enum AutoOff *minutes) {
 	static const uint8_t ack[] = { 0x01, 0x04, 0x03, 0x01, ANY };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00 };
 	uint8_t buffer[sizeof(ack)];
@@ -233,7 +234,7 @@ static int get_auto_off(int sock, enum AutoOff *minutes) {
 	return 0;
 }
 
-int set_auto_off(int sock, enum AutoOff minutes) {
+int set_auto_off(socktype_t sock, enum AutoOff minutes) {
 	static uint8_t send_buf[] = { 0x01, 0x04, 0x02, 0x01, ANY };
 	send_buf[4] = minutes;
 
@@ -251,7 +252,7 @@ int set_auto_off(int sock, enum AutoOff minutes) {
 	return abs(minutes - got_minutes);
 }
 
-static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
+static int get_noise_cancelling(socktype_t sock, enum NoiseCancelling *level) {
 	static const uint8_t ack[] = { 0x01, 0x06, 0x03, 0x02, ANY, 0x0b };
 	static const uint8_t mask[] = { 0xff, 0xff, 0xff, 0xff, 0x00, 0xff };
 	uint8_t buffer[sizeof(ack)];
@@ -265,7 +266,7 @@ static int get_noise_cancelling(int sock, enum NoiseCancelling *level) {
 	return 0;
 }
 
-int set_noise_cancelling(int sock, enum NoiseCancelling level) {
+int set_noise_cancelling(socktype_t sock, enum NoiseCancelling level) {
 	static uint8_t send_buf[] = { 0x01, 0x06, 0x02, 0x01, ANY };
 	send_buf[4] = level;
 
@@ -283,7 +284,7 @@ int set_noise_cancelling(int sock, enum NoiseCancelling level) {
 	return abs(level - got_level);
 }
 
-int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
+int get_device_status(socktype_t sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level) {
 	unsigned int device_id;
 	unsigned int index;
@@ -335,7 +336,7 @@ int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage
 	return read_check(sock, buffer2, sizeof(buffer2), ack2, NULL);
 }
 
-int set_pairing(int sock, enum Pairing pairing) {
+int set_pairing(socktype_t sock, enum Pairing pairing) {
 	static uint8_t send_buf[] = { 0x04, 0x08, 0x05, 0x01, ANY };
 	static uint8_t ack[] = { 0x04, 0x08, 0x06, 0x01, ANY };
 	send_buf[4] = pairing;
@@ -343,7 +344,7 @@ int set_pairing(int sock, enum Pairing pairing) {
 	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
 }
 
-int get_firmware_version(int sock, char version[VER_STR_LEN]) {
+int get_firmware_version(socktype_t sock, char version[VER_STR_LEN]) {
 	static const uint8_t send_buf[] = { 0x00, 0x05, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x05, 0x03, 0x05 };
 
@@ -361,7 +362,7 @@ int get_firmware_version(int sock, char version[VER_STR_LEN]) {
 	return 0;
 }
 
-int get_serial_number(int sock, char serial[0x100]) {
+int get_serial_number(socktype_t sock, char serial[0x100]) {
 	static const uint8_t send_buf[] = { 0x00, 0x07, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x00, 0x07, 0x03 };
 
@@ -385,7 +386,7 @@ int get_serial_number(int sock, char serial[0x100]) {
 	return 0;
 }
 
-int get_battery_level(int sock, unsigned int *level) {
+int get_battery_level(socktype_t sock, unsigned int *level) {
 	static const uint8_t send_buf[] = { 0x02, 0x02, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x02, 0x02, 0x03, 0x01 };
 
@@ -400,7 +401,7 @@ int get_battery_level(int sock, unsigned int *level) {
 	return 0;
 }
 
-int get_device_info(int sock, bdaddr_t address, struct Device *device) {
+int get_device_info(socktype_t sock, bdaddr_t address, struct Device *device) {
 	static uint8_t send_buf[10] = { 0x04, 0x05, 0x01, BT_ADDR_LEN };
 	static const uint8_t ack[] = { 0x04, 0x05, 0x03 };
 
@@ -454,7 +455,7 @@ int get_device_info(int sock, bdaddr_t address, struct Device *device) {
 	return 0;
 }
 
-int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+int get_paired_devices(socktype_t sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected) {
 	static const uint8_t send_buf[] = { 0x04, 0x04, 0x01, 0x00 };
 	static const uint8_t ack[] = { 0x04, 0x04, 0x03 };
@@ -494,7 +495,7 @@ int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *nu
 	return 0;
 }
 
-int connect_device(int sock, bdaddr_t address) {
+int connect_device(socktype_t sock, bdaddr_t address) {
 	static uint8_t send_buf[11] = { 0x04, 0x01, 0x05, BT_ADDR_LEN + 1, 0x00 };
 	static uint8_t ack[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
 	memcpy(&send_buf[5], &BDADDR_BYTES(address), BT_ADDR_LEN);
@@ -502,7 +503,7 @@ int connect_device(int sock, bdaddr_t address) {
 	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
 }
 
-int disconnect_device(int sock, bdaddr_t address) {
+int disconnect_device(socktype_t sock, bdaddr_t address) {
 	static uint8_t send_buf[10] = { 0x04, 0x02, 0x05, BT_ADDR_LEN };
 	static uint8_t ack[10] = { 0x04, 0x02, 0x07, BT_ADDR_LEN };
 	memcpy(&send_buf[4], &BDADDR_BYTES(address), BT_ADDR_LEN);
@@ -510,7 +511,7 @@ int disconnect_device(int sock, bdaddr_t address) {
 	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
 }
 
-int remove_device(int sock, bdaddr_t address) {
+int remove_device(socktype_t sock, bdaddr_t address) {
 	static uint8_t send_buf[10] = { 0x04, 0x03, 0x05, BT_ADDR_LEN };
 	static uint8_t ack[10] = { 0x04, 0x03, 0x06, BT_ADDR_LEN };
 	memcpy(&send_buf[4], &BDADDR_BYTES(address), BT_ADDR_LEN);

@@ -1,12 +1,7 @@
 #ifndef BASED_H
 #define BASED_H
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <stdint.h>
-#else
-#include <bluetooth/bluetooth.h>
-#endif
+#include "socket.h"
 
 #include <stddef.h>
 
@@ -72,25 +67,25 @@ struct Device {
 };
 
 int has_noise_cancelling(unsigned int device_id);
-int init_connection(int sock);
-int send_packet(int sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]);
-int get_device_id(int sock, unsigned int *device_id, unsigned int *index);
-int set_name(int sock, const char *name);
-int set_prompt_language(int sock, enum PromptLanguage language);
-int set_voice_prompts(int sock, int on);
-int set_auto_off(int sock, enum AutoOff minutes);
-int set_noise_cancelling(int sock, enum NoiseCancelling level);
-int get_device_status(int sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
+int init_connection(socktype_t sock);
+int send_packet(socktype_t sock, const void *send, size_t send_n, uint8_t recieved[MAX_BT_PACK_LEN]);
+int get_device_id(socktype_t sock, unsigned int *device_id, unsigned int *index);
+int set_name(socktype_t sock, const char *name);
+int set_prompt_language(socktype_t sock, enum PromptLanguage language);
+int set_voice_prompts(socktype_t sock, int on);
+int set_auto_off(socktype_t sock, enum AutoOff minutes);
+int set_noise_cancelling(socktype_t sock, enum NoiseCancelling level);
+int get_device_status(socktype_t sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level);
-int set_pairing(int sock, enum Pairing pairing);
-int get_firmware_version(int sock, char version[VER_STR_LEN]);
-int get_serial_number(int sock, char serial[0x100]);
-int get_battery_level(int sock, unsigned int *level);
-int get_device_info(int sock, bdaddr_t address, struct Device *device);
-int get_paired_devices(int sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
+int set_pairing(socktype_t sock, enum Pairing pairing);
+int get_firmware_version(socktype_t sock, char version[VER_STR_LEN]);
+int get_serial_number(socktype_t sock, char serial[0x100]);
+int get_battery_level(socktype_t sock, unsigned int *level);
+int get_device_info(socktype_t sock, bdaddr_t address, struct Device *device);
+int get_paired_devices(socktype_t sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected);
-int connect_device(int sock, bdaddr_t address);
-int disconnect_device(int sock, bdaddr_t address);
-int remove_device(int sock, bdaddr_t address);
+int connect_device(socktype_t sock, bdaddr_t address);
+int disconnect_device(socktype_t sock, bdaddr_t address);
+int remove_device(socktype_t sock, bdaddr_t address);
 
 #endif
