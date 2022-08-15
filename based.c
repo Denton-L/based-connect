@@ -331,9 +331,7 @@ int get_device_status(socktype_t sock, char name[MAX_NAME_LEN + 1], enum PromptL
 		*level = NC_DNE;
 	}
 
-	static const uint8_t ack2[] = { 0x01, 0x01, 0x06, 0x00 };
-	uint8_t buffer2[sizeof(ack2)];
-	return read_check(sock, buffer2, sizeof(buffer2), ack2, NULL);
+	return status;
 }
 
 int set_pairing(socktype_t sock, enum Pairing pairing) {
@@ -341,6 +339,15 @@ int set_pairing(socktype_t sock, enum Pairing pairing) {
 	static uint8_t ack[] = { 0x04, 0x08, 0x06, 0x01, ANY };
 	send_buf[4] = pairing;
 	ack[4] = pairing;
+	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
+}
+
+int set_self_voice(socktype_t sock, enum SelfVoice selfvoice) {
+	static uint8_t send_buf[] = { 0x01, 0x0b, 0x02, 0x02, 0x01, ANY, 0x38 };
+	static uint8_t ack[] = { 0x01, 0x0b, 0x03, 0x03, 0x01, ANY, 0x0f};
+
+	send_buf[5] = selfvoice;
+	ack[5] = selfvoice;
 	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
 }
 
