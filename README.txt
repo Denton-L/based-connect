@@ -105,7 +105,8 @@ On Windows, use
 Get-PnpDevice -class Bluetooth | Select-Object -Property FriendlyName,
 DeviceID
 ```
-to enumerate the Bluetooth device ID.
+to enumerate the Bluetooth device ID. The device ID needs to be written as
+AA:BB:CC:DD:EE:FF.
 
 Dependencies
 ------------

@@ -18,6 +18,12 @@
 #define ANY 0x00
 #define CN_BASE_PACK_LEN 4
 
+#define FUNCTION_BLOCK_DEVICE_MANAGEMENT 0x04
+
+#define DEVICE_MANAGEMENT_CONNECT 0x01
+
+#define OPERATOR_START 0x05
+
 int has_noise_cancelling(unsigned int device_id) {
 	switch (device_id) {
 		case 0x4014:
@@ -507,6 +513,15 @@ int connect_device(socktype_t sock, bdaddr_t address) {
 	static uint8_t ack[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
 	memcpy(&send_buf[5], &BDADDR_BYTES(address), BT_ADDR_LEN);
 	memcpy(&ack[4], &BDADDR_BYTES(address), BT_ADDR_LEN);
+	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
+}
+
+int connect_music_share(socktype_t sock, bdaddr_t puppet_address, bdaddr_t master_address) {
+	static uint8_t send_buf[5 + 2 * BT_ADDR_LEN] = { FUNCTION_BLOCK_DEVICE_MANAGEMENT, DEVICE_MANAGEMENT_CONNECT, OPERATOR_START, BT_ADDR_LEN * 2 + 1, 0x10 };
+	static uint8_t ack[10] = { 0x04, 0x01, 0x07, BT_ADDR_LEN };
+	memcpy(&send_buf[5], &BDADDR_BYTES(puppet_address), BT_ADDR_LEN);
+	memcpy(&send_buf[5 + BT_ADDR_LEN], &BDADDR_BYTES(master_address), BT_ADDR_LEN);
+	memcpy(&ack[4], &BDADDR_BYTES(puppet_address), BT_ADDR_LEN);
 	return write_check(sock, send_buf, sizeof(send_buf), ack, sizeof(ack));
 }
 

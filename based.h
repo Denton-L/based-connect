@@ -56,7 +56,8 @@ enum Pairing {
 enum DeviceStatus {
 	DS_THIS = 0x03,
 	DS_CONNECTED = 0x01,
-	DS_DISCONNECTED = 0x00
+	DS_DISCONNECTED = 0x00,
+	DS_MUSICSHARE = 0x45
 };
 
 enum DevicesConnected {
@@ -97,6 +98,7 @@ int get_device_info(socktype_t sock, bdaddr_t address, struct Device *device);
 int get_paired_devices(socktype_t sock, bdaddr_t addresses[MAX_NUM_DEVICES], size_t *num_devices,
 		enum DevicesConnected *connected);
 int connect_device(socktype_t sock, bdaddr_t address);
+int connect_music_share(socktype_t sock, bdaddr_t address, bdaddr_t own_address);
 int disconnect_device(socktype_t sock, bdaddr_t address);
 int remove_device(socktype_t sock, bdaddr_t address);
 

@@ -54,8 +54,11 @@ static void usage() {
 		"\t\tPrint the devices currently connected to the device.\n"
 		"\t\t!: indicates the current device\n"
 		"\t\t*: indicates other connected devices\n"
+		"\t\tS: indicates a device that music is shared to\n"
 		"\t--connect-device=<address>\n"
 		"\t\tAttempt to connect to the device at address.\n"
+		"\t--connect-music-share=<address>\n"
+		"\t\tAttempt to connect to the device at address and share music.\n"
 		"\t--disconnect-device=<address>\n"
 		"\t\tDisconnect the device at address.\n"
 		"\t--remove-device=<address>\n"
@@ -399,6 +402,9 @@ static int do_get_paired_devices(socktype_t sock) {
 			case DS_DISCONNECTED:
 				status_symb = ' ';
 				break;
+			case DS_MUSICSHARE:
+				status_symb = 'S';
+				break;
 			default:
 				return 1;
 		}
@@ -414,6 +420,25 @@ static int do_connect_device(socktype_t sock, const char *arg) {
 	reverse_str2ba(arg, &address);
 	return connect_device(sock, address);
 }
+
+static int do_connect_music_share(socktype_t sock, const char *arg) {
+	bdaddr_t master_address = {0};
+	bdaddr_t puppet_address = {0};
+	const char *master_address_str = strchr(arg, ',');
+	char puppet_address_str[BT_ADDR_LEN * 3];
+	if (master_address_str != NULL && *master_address_str != '\0' && (master_address_str - arg) <= BT_ADDR_LEN * 3) {
+		strncpy_s(puppet_address_str, sizeof(puppet_address_str), arg, sizeof(puppet_address_str) - 1);
+		puppet_address_str[sizeof(puppet_address_str) - 1] = 0;
+		reverse_str2ba(puppet_address_str, &puppet_address);
+		reverse_str2ba(master_address_str + 1, &master_address);
+		return connect_music_share(sock, puppet_address, master_address);
+	}
+	else {
+		fprintf(stderr, "Invalid music share argument: Argument must be given as \"<puppet-address>,<source-address>\"\n");
+		return 1;
+	}
+}
+
 
 static int do_disconnect_device(socktype_t sock, const char *arg) {
 	bdaddr_t address;
@@ -478,6 +503,7 @@ int main(int argc, char *argv[]) {
 		{ "battery-level", no_argument, NULL, 'b' },
 		{ "paired-devices", no_argument, NULL, 'a' },
 		{ "connect-device", required_argument, NULL, 2 },
+		{ "connect-music-share", required_argument, NULL, 6 },
 		{ "disconnect-device", required_argument, NULL, 3 },
 		{ "remove-device", required_argument, NULL, 4 },
 		{ "device-id", no_argument, NULL, 5 },
@@ -485,6 +511,7 @@ int main(int argc, char *argv[]) {
 		{ "send-packet", required_argument, NULL, 1 },
 		{ 0, 0, 0, 0 }
 	};
+
 #ifdef _WIN32
 	WORD version_requested = MAKEWORD(2, 2);
 	WSADATA wsa_data;
@@ -615,6 +642,9 @@ int main(int argc, char *argv[]) {
 				break;
 			case 2:
 				status = do_connect_device(sock, optarg);
+				break;
+			case 6:
+				status = do_connect_music_share(sock, optarg);
 				break;
 			case 3:
 				status = do_disconnect_device(sock, optarg);
