@@ -90,6 +90,7 @@ int set_noise_cancelling(socktype_t sock, enum NoiseCancelling level);
 int get_device_status(socktype_t sock, char name[MAX_NAME_LEN + 1], enum PromptLanguage *language,
 		enum AutoOff *minutes, enum NoiseCancelling *level);
 int set_pairing(socktype_t sock, enum Pairing pairing);
+int set_self_voice(socktype_t sock, enum SelfVoice selfvoice);
 int get_firmware_version(socktype_t sock, char version[VER_STR_LEN]);
 int get_firmware_version(socktype_t sock, char version[VER_STR_LEN]);
 int get_serial_number(socktype_t sock, char serial[0x100]);

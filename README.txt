@@ -55,9 +55,15 @@ Options:
 		Print the devices currently connected to the device.
 		!: indicates the current device
 		*: indicates other connected devices
+                S: indicates a device that music is shared to
 
-	--connect-device=<address>
-		Attempt to connect to the device at address.
+        --connect-device=<address>
+                Attempt to connect to the device at address.
+
+        --connect-music-share=<puppet-address>,<source-address>
+                Attempt to connect to the puppet device at address
+                (secondary headphones) and share music from source
+                address (computer).
 
 	--disconnect-device=<address>
 		Disconnect the device at address.
