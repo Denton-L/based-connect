@@ -55,9 +55,15 @@ Options:
 		Print the devices currently connected to the device.
 		!: indicates the current device
 		*: indicates other connected devices
+                S: indicates a device that music is shared to
 
-	--connect-device=<address>
-		Attempt to connect to the device at address.
+        --connect-device=<address>
+                Attempt to connect to the device at address.
+
+        --connect-music-share=<puppet-address>,<source-address>
+                Attempt to connect to the puppet device at address
+                (secondary headphones) and share music from source
+                address (computer).
 
 	--disconnect-device=<address>
 		Disconnect the device at address.
@@ -71,8 +77,21 @@ Options:
 Building
 --------
 
-Simply run `make -j` to build the program. The executable produced will be
-called `based-connect`.
+Create a build directory (e.g., `mkdir build`) and enter it. Run
+```sh
+cmake ..
+```
+to create a Makefile, and then run
+```sh
+cmake --build .
+```
+to build the project.
+
+On Windows, you'll need `vcpkg` with the `getopt` package installed. Run
+```powershell
+cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" ..
+```
+to create the build files.
 
 Installing
 ----------
@@ -83,6 +102,17 @@ are assignable and have the traditional meaning.
 Alternatively, if you run Arch Linux, you can download it from the AUR here:
 
 https://aur.archlinux.org/packages/based-connect-git/
+
+Running
+-------
+
+On Windows, use
+```powershell
+Get-PnpDevice -class Bluetooth | Select-Object -Property FriendlyName,
+DeviceID
+```
+to enumerate the Bluetooth device ID. The device ID needs to be written as
+AA:BB:CC:DD:EE:FF.
 
 Dependencies
 ------------
